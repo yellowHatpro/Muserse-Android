@@ -1,0 +1,28 @@
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_library_root_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/blackTransparentLighter"
+        android:layout_margin="5dp"
+        app:cardCornerRadius="5dp">
+
+
+            <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/recyclerViewSystemPlaylist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fadeScrollbars="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>developer_message</key>
+        <value>Hey there, this is AB here. \n\n
+            I am glad you are enjoying Muserse and it needs your help.
+            To reach global audience, Muserse needs to be translated to regional languages and if you happen to know one and can translate English to that, please contribute!
+            Write me to know more on how to get started with translations.
+            \n\n
+            If you like Muserse and want to thank me, there is nothing in this world which will make me happier than good review from you on play store. So do leave your feedback.
+        </value>
+    </entry>
+
+    <entry>
+        <key>link</key>
+        <value>https://github.com/akshaaatt/Muserse</value>
+    </entry>
+
+    <entry>
+        <key>sample_lyric_card</key>
+        <value>https://firebasestorage.googleapis.com/v0/b/ab-music.appspot.com/o/temp.jpeg?alt=media&amp;token=c8f8f1ea-84ea-4ea1-b713-47111b5014be</value>
+    </entry>
+
+</defaultsMap>

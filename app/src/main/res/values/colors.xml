@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#060606</color>
+    <color name="colorPrimaryTransparent">#80005252</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorPrimaryDarkTransparent">#80004A4A</color>
+    <color name="colorAccent">#1e1e1e</color>
+
+    <color name="fab_background_color">#000022e1</color>
+    <color name="dialog_background_color">#00d20d0d</color>
+    <color name="dialog_background_scrim">#99323232</color>
+
+    <color name="miniPlayerColor">#7A7278</color>
+
+    <color name="notification_color">#da202d</color>
+
+    <color name="colorRed">#0a0a0a</color>
+    <color name="colorSleepTimer">#f959c8</color>
+    <color name="colorwhite">#ffffff</color>
+    <color name="colorwhite_transparent">#D0FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorYellow">#99a101</color>
+    <color name="colorBlackThemeBack">#40787e02</color>
+
+    <color name="fab_Colors_lyric_view">#c60055</color>z
+
+    <color name="light_gray1">#dddddd</color>
+    <color name="light_gray2">#D0D0D0</color>
+    <color name="light_text">#040404</color>
+
+    <color name="gray3">#FF514A4E</color>
+    <color name="darkgray">#313030</color>
+
+    <color name="dark_gray1">#616161</color>
+    <color name="dark_gray2">#585757</color>
+    <color name="dark_gray3">#939292</color>
+    <color name="dark_text">#ffffff</color>
+
+
+    <color name="primary_text_color">#D0F7F6F6</color>
+    <color name="secondary_text_color">#d0979797</color>
+
+    <color name="colorTransparent">#00ffffff</color>
+    <color name="popupMenuBackground">#d5000000</color>
+    <color name="blackOverlay">#a0000000</color>
+    <color name="blackTransparent">#77000000</color>
+    <color name="blackTransparentLight">#10000000</color>
+    <color name="blackTransparentLighter">#50000000</color>
+
+    <color name="backkColorForNotification">#dd000000</color>
+
+    <color name="lightThemeAccent">#6f6f70</color>
+    <color name="darkThemeAccent">#959597</color>
+    <color name="nowPlayingAccent">#0d0d0d</color>
+
+    <color name="nowPlayingText">#ebebec</color>
+
+    <color name="reward_points_count">#da202d</color>
+    <color name="new_feature">#f73232</color>
+
+    <!--<color name="notification_color_for_no_album_art">#f73232</color>-->
+
+    <color name="notification_color_for_no_album_art">#162029</color>
+
+    <!-- gradient themes -->
+
+    <color name="theme0_color1">#000000</color>  <!--default one. Maybe black -->
+    <color name="theme0_color2">#000000</color>
+
+    <color name="theme1_color1">#80FF0099</color>
+    <color name="theme1_color2">#80493240</color>
+    <color name="theme1_color2_widget">#493240</color>
+    <color name="theme1_color1_dark">#c0FF0099</color>
+    <color name="theme1_color2_dark">#c0493240</color>
+
+    <color name="theme2_color1">#8064b3f4</color>
+    <color name="theme2_color2">#80c2e59c</color>
+    <color name="theme2_color1_widget">#64b3f4</color>
+    <color name="theme2_color2_widget">#c2e59c</color>
+    <color name="theme2_color1_dark">#c064b3f4</color>
+    <color name="theme2_color2_dark">#c0c2e59c</color>
+
+    <color name="theme3_color1">#80283c86</color>
+    <color name="theme3_color2">#8045a247</color>
+    <color name="theme3_color2_widget">#45a247</color>
+    <color name="theme3_color1_dark">#c0283c86</color>
+    <color name="theme3_color2_dark">#c045a247</color>
+
+
+    <color name="theme4_color1">#80c94b4b</color>
+    <color name="theme4_color2">#804b134f</color>
+    <color name="theme4_color2_widget">#4b134f</color>
+    <color name="theme4_color1_dark">#c0c94b4b</color>
+    <color name="theme4_color2_dark">#c04b134f</color>
+
+
+    <color name="theme5_color1">#8000b09b</color>
+    <color name="theme5_color2">#8096c93d</color>
+    <color name="theme5_color1_widget">#8000b09b</color>
+    <color name="theme5_color2_widget">#96c93d</color>
+    <color name="theme5_color1_dark">#c000b09b</color>
+    <color name="theme5_color2_dark">#c096c93d</color>
+
+
+    <color name="theme6_color1">#80000000</color>
+    <color name="theme6_color2">#80EB5757</color>
+    <color name="theme6_color2_widget">#EB5757</color>
+    <color name="theme6_color1_dark">#c0000000</color>
+    <color name="theme6_color2_dark">#c0EB5757</color>
+
+
+    <color name="theme7_color1">#8034e89e</color>
+    <color name="theme7_color2">#800f3443</color>
+    <color name="theme7_color2_widget">#0f3443</color>
+    <color name="theme7_color1_dark">#c034e89e</color>
+    <color name="theme7_color2_dark">#c00f3443</color>
+
+    <color name="theme8_color1">#8000416A</color>
+    <color name="theme8_color2">#80ffa000</color>
+    <color name="theme8_color2_widget">#ffa000</color>
+    <color name="theme8_color1_dark">#c000416A</color>
+    <color name="theme8_color2_dark">#c0ffa000</color>
+
+    <color name="theme9_color1">#80000046</color>
+    <color name="theme9_color2">#801CB5E0</color>
+    <color name="theme9_color2_widget">#1CB5E0</color>
+    <color name="theme9_color1_dark">#c0000046</color>
+    <color name="theme9_color2_dark">#c01CB5E0</color>
+
+
+    <color name="theme10_color1">#802c3e50</color>
+    <color name="theme10_color2">#80bdc3c7</color>
+    <color name="theme10_color2_widget">#bdc3c7</color>
+    <color name="theme10_color1_dark">#c02c3e50</color>
+    <color name="theme10_color2_dark">#c0bdc3c7</color>
+
+
+    <color name="theme11_color1">#80ff4b1f</color>
+    <color name="theme11_color2">#801fddff</color>
+    <color name="theme11_color2_widget">#1fddff</color>
+    <color name="theme11_color1_dark">#c0ff4b1f</color>
+    <color name="theme11_color2_dark">#c01fddff</color>
+
+    <color name="theme12_color1">#80f64f59</color>
+    <color name="theme12_color2">#80c471ed</color>
+    <color name="theme12_color3">#8012c2e9</color>
+    <color name="theme12_color2_widget">#c471ed</color>
+    <color name="theme12_color1_dark">#c0f64f59</color>
+    <color name="theme12_color2_dark">#c0c471ed</color>
+    <color name="theme12_color3_dark">#c012c2e9</color>
+
+    <color name="theme13_color1">#80f64f59</color>
+    <color name="theme13_color2">#80FF8C00</color>
+    <color name="theme13_color3">#8040E0D0</color>
+    <color name="theme13_color2_widget">#FF8C00</color>
+    <color name="theme13_color1_dark">#c0f64f59</color>
+    <color name="theme13_color2_dark">#c0FF8C00</color>
+    <color name="theme13_color3_dark">#c040E0D0</color>
+
+    <color name="theme14_color1">#801a2a6c</color>
+    <color name="theme14_color2">#80b21f1f</color>
+    <color name="theme14_color3">#80fdbb2d</color>
+    <color name="theme14_color2_widget">#b21f1f</color>
+    <color name="theme14_color1_dark">#c01a2a6c</color>
+    <color name="theme14_color2_dark">#c0b21f1f</color>
+    <color name="theme14_color3_dark">#c0fdbb2d</color>
+
+    <color name="theme15_color1">#8040E0D0</color>
+    <color name="theme15_color2">#80FF8C00</color>
+    <color name="theme15_color3">#80FF0080</color>
+    <color name="theme15_color2_widget">#FF8C00</color>
+    <color name="theme15_color1_dark">#c040E0D0</color>
+    <color name="theme15_color2_dark">#c0FF8C00</color>
+    <color name="theme15_color3_dark">#c0FF0080</color>
+
+    <color name="theme16_color1">#80333333</color>
+    <color name="theme16_color2">#805a5454</color>
+    <color name="theme16_color2_widget">#45a247</color>
+    <color name="theme16_color1_dark">#c0333333</color>
+    <color name="theme16_color2_dark">#c05a5454</color>
+
+    <color name="theme17_color1">#8019A186</color>
+    <color name="theme17_color2">#80F2CF43</color>
+    <color name="theme17_color2_widget">#F2CF43</color>
+    <color name="theme17_color1_dark">#c019A186</color>
+    <color name="theme17_color2_dark">#c0F2CF43</color>
+
+    <color name="theme18_color1">#80BF033B</color>
+    <color name="theme18_color2">#80FFC719</color>
+    <color name="theme18_color2_widget">#FFC719</color>
+    <color name="theme18_color1_dark">#c0BF033B</color>
+    <color name="theme18_color2_dark">#c0FFC719</color>
+
+    <color name="theme19_color1">#80000000</color>
+    <color name="theme19_color2">#80D2A813</color>
+    <color name="theme19_color2_widget">#D2A813</color>
+    <color name="theme19_color1_dark">#c0000000</color>
+    <color name="theme19_color2_dark">#c0D2A813</color>
+
+    <color name="theme20_color1">#800C0C0C</color>
+    <color name="theme20_color2">#804834D4</color>
+    <color name="theme20_color2_widget">#A29BFE</color>
+    <color name="theme20_color1_dark">#c00C0C0C</color>
+    <color name="theme20_color2_dark">#c04834D4</color>
+
+    <color name="theme21_color1">#80ff1493</color>
+    <color name="theme21_color2">#800000ff</color>
+    <!--<color name="theme21_color3">#80ff8c00</color>-->
+    <color name="theme21_color2_widget">#ff1493</color>
+    <color name="theme21_color1_dark">#c0ff1493</color>
+    <color name="theme21_color2_dark">#c00000ff</color>
+    <!--<color name="theme21_color3_dark">#c0ff8c00</color>-->
+
+    <!-- play widget custom view  -->
+    <color name="pw_primary">#3F51B5</color>
+    <color name="pw_primary_dark">#303F9F</color>
+    <color name="pw_primary_light">#C5CAE9</color>
+    <color name="pw_accent">#FF5722</color>
+    <color name="pw_primary_text">#212121</color>
+    <color name="pw_secondary_text">#727272</color>
+    <color name="pw_icons">#FFFFFF</color>
+    <color name="pw_divider">#B6B6B6</color>
+
+    <color name="pw_bg_main">#FF444444</color>
+    <color name="pw_circle_color_strong">#FF5722</color>
+    <color name="pw_circle_color">#99FF5722</color>
+    <color name="pw_circle_color_translucent">#88FF5722</color>
+    <color name="pw_gray">#33000000</color>
+
+    <color name="pw_shadow_start_color">#00000000</color>
+    <color name="pw_shadow_mid_color">#00000000</color>
+    <color name="pw_shadow_end_color">#00000000</color>
+
+    <color name="pw_shadow_start_color_hard">#99ff0000</color>
+    <color name="pw_shadow_mid_color_hard">#00000000</color>
+    <color name="pw_shadow_end_color_hard">#00000000</color>
+
+    <color name="pw_big_diffuser_color">#99448888</color>
+    <color name="pw_medium_diffuser_color">#774488FF</color>
+    <color name="pw_fab_background_tint">#ff66ff</color>
+
+    <color name="pw_progress_line_color">#99ffffff</color>
+    <color name="pw_progress_ball_color">#FF5722</color>
+    <color name="pw_progress_complete_color">#88FF5722</color>
+
+    <color name="pw_bg_dark_gray_item_color_mask">#4d4d4d</color>
+    <color name="pw_bg_dark_gray_item_color">#595959</color>
+    <color name="pw_bg_light_gray_item_color">#ffffff</color>
+
+    <!-- ringtone cutter -->
+    <color name="waveform_selected">#33b5e5</color>
+    <color name="waveform_unselected">#195a72</color>
+    <color name="waveform_unselected_bkgnd_overlay">#0a242d</color>
+    <color name="selection_border">#ffffff</color>
+    <color name="playback_indicator">#ffff66</color>
+    <color name="grid_line">#66ffffff</color>
+    <color name="timecode">#ddffffdd</color>
+    <color name="timecode_shadow">#aa000000</color>
+
+    <color name="type_bkgnd_alarm">#88880000</color>
+    <color name="type_bkgnd_ringtone">#88008888</color>
+    <color name="type_bkgnd_notification">#88666600</color>
+    <color name="type_bkgnd_music">#88000000</color>
+    <color name="type_bkgnd_unsupported">#88cccccc</color>
+
+
+</resources>
+
