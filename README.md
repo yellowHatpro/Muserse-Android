@@ -22,10 +22,6 @@
 
 ![vid](https://github.com/akshaaatt/Muserse/blob/master/promo/vid.gif)
 
-# Muserse
-
-Android App of Muserse
-
 ## Features
 
 * Written in Kotlin
