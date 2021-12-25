@@ -20,7 +20,7 @@
 
 ---
 
-![vid](https://github.com/akshaaatt/Muserse/blob/master/promo/vid.mp4)
+![vid](https://github.com/akshaaatt/Muserse/blob/master/promo/vid.gif)
 
 # Muserse
 
