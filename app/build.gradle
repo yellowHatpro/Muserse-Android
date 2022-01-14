@@ -46,7 +46,6 @@ android {
 
     buildFeatures {
         viewBinding true
-        dataBinding true
     }
 
     lintOptions {
@@ -97,7 +96,6 @@ dependencies {
     implementation 'com.github.akshaaatt:Google-IAP:1.2.2'
 
     implementation 'com.jakewharton:butterknife:10.2.3'
-    implementation 'androidx.test:monitor:1.5.0'
     kapt 'com.jakewharton:butterknife-compiler:10.2.3'
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
