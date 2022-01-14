@@ -253,35 +253,35 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener,
                         title = title!!.replace(" ", "_")
                         when (title) {
                             Constants.SYSTEM_PLAYLISTS.MOST_PLAYED -> {
-                                trackList = PlaylistManager.getInstance(applicationContext)!!.GetPlaylist(Constants.SYSTEM_PLAYLISTS.MOST_PLAYED)
+                                trackList = PlaylistManager.getInstance(applicationContext)!!.getPlaylist(Constants.SYSTEM_PLAYLISTS.MOST_PLAYED)
                                 adapter = SecondaryLibraryAdapter(this@ActivitySecondaryLibrary,
                                     trackList,
                                     status,
                                     Constants.SYSTEM_PLAYLISTS.MOST_PLAYED)
                             }
                             Constants.SYSTEM_PLAYLISTS.MY_FAV -> {
-                                trackList = PlaylistManager.getInstance(applicationContext)!!.GetPlaylist(Constants.SYSTEM_PLAYLISTS.MY_FAV)
+                                trackList = PlaylistManager.getInstance(applicationContext)!!.getPlaylist(Constants.SYSTEM_PLAYLISTS.MY_FAV)
                                 adapter = SecondaryLibraryAdapter(this@ActivitySecondaryLibrary,
                                     trackList,
                                     status,
                                     Constants.SYSTEM_PLAYLISTS.MY_FAV)
                             }
                             Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED -> {
-                                trackList = PlaylistManager.getInstance(applicationContext)!!.GetPlaylist(Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED)
+                                trackList = PlaylistManager.getInstance(applicationContext)!!.getPlaylist(Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED)
                                 adapter = SecondaryLibraryAdapter(this@ActivitySecondaryLibrary,
                                     trackList,
                                     status,
                                     Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED)
                             }
                             Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED -> {
-                                trackList = PlaylistManager.getInstance(applicationContext)!!.GetPlaylist(Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED)
+                                trackList = PlaylistManager.getInstance(applicationContext)!!.getPlaylist(Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED)
                                 adapter = SecondaryLibraryAdapter(this@ActivitySecondaryLibrary,
                                     trackList,
                                     status,
                                     Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED)
                             }
                             else -> {
-                                trackList = PlaylistManager.getInstance(applicationContext)!!.GetPlaylist(title!!)
+                                trackList = PlaylistManager.getInstance(applicationContext)!!.getPlaylist(title!!)
                                 adapter = SecondaryLibraryAdapter(this@ActivitySecondaryLibrary,
                                     trackList,
                                     status,

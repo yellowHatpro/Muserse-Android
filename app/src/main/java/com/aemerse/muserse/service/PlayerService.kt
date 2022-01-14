@@ -383,7 +383,7 @@ class PlayerService : Service(), AudioManager.OnAudioFocusChangeListener, ShakeD
                         if (getCurrentTrack() == null) return
                         when {
                             PlaylistManager.getInstance(applicationContext)!!.isFavNew(getCurrentTrack()!!.id) -> {
-                                PlaylistManager.getInstance(applicationContext)!!.RemoveFromFavNew(getCurrentTrack()!!.id)
+                                PlaylistManager.getInstance(applicationContext)!!.removeFromFavNew(getCurrentTrack()!!.id)
                             }
                             else -> {
                                 PlaylistManager.getInstance(applicationContext)!!.addSongToFav(getCurrentTrack()!!.id)
@@ -1127,7 +1127,7 @@ class PlayerService : Service(), AudioManager.OnAudioFocusChangeListener, ShakeD
 
 
         //here
-        PlaylistManager.getInstance(applicationContext)!!.AddToRecentlyPlayedAndUpdateCount(trackList.get(pos))
+        PlaylistManager.getInstance(applicationContext)!!.addToRecentlyPlayedAndUpdateCount(trackList.get(pos))
         val result: Int = mAudioManager!!.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
             AudioManager.AUDIOFOCUS_GAIN)
         if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -1500,7 +1500,7 @@ class PlayerService : Service(), AudioManager.OnAudioFocusChangeListener, ShakeD
     fun storeTracklist() {
 
         //send copy to avoid concurrent modification
-        PlaylistManager.getInstance(applicationContext)!!.StoreLastPlayingQueueNew(ArrayList(trackList))
+        PlaylistManager.getInstance(applicationContext)!!.storeLastPlayingQueueNew(ArrayList(trackList))
         try {
             ApplicationClass.getPref().edit().putString(Constants.PREFERENCES.STORED_SONG_ID, currentTrack!!.id.toString() + "").apply()
             ApplicationClass.getPref().edit().putInt(Constants.PREFERENCES.STORED_SONG_POSITION_DURATION,
@@ -1511,7 +1511,7 @@ class PlayerService : Service(), AudioManager.OnAudioFocusChangeListener, ShakeD
     }
 
     private fun restoreTracklist() {
-        trackList.addAll(PlaylistManager.getInstance(applicationContext)!!.RestoreLastPlayingQueueNew())
+        trackList.addAll(PlaylistManager.getInstance(applicationContext)!!.restoreLastPlayingQueueNew())
         val id_string = ApplicationClass.getPref().getString(Constants.PREFERENCES.STORED_SONG_ID, "")
         Log.d("PlayerService", "restoreTracklist: restored song id : $id_string")
         var id: Int = 0

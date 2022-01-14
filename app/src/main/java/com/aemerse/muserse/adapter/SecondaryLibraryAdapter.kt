@@ -254,7 +254,7 @@ class SecondaryLibraryAdapter : RecyclerView.Adapter<SecondaryLibraryAdapter.MyV
             }
         }
         if ((item.title == REMOVE)) {
-            PlaylistManager.getInstance(ApplicationClass.getContext())!!.RemoveSongFromPlaylistNew(playlist_name!!, dataItems!!.get(position).id)
+            PlaylistManager.getInstance(ApplicationClass.getContext())!!.removeSongFromPlaylistNew(playlist_name!!, dataItems!!.get(position).id)
             dataItems.removeAt(position)
             notifyItemRemoved(position)
         }

@@ -7,10 +7,7 @@ import android.graphics.Color
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.SystemClock
+import android.os.*
 import android.text.InputType
 import android.text.method.ScrollingMovementMethod
 import android.transition.ArcMotion
@@ -136,7 +133,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
     private val mLayoutManager: WrapContentLinearLayoutManager =
         WrapContentLinearLayoutManager(this)
     private var mItemTouchHelper: ItemTouchHelper? = null
-    private val mHandler: Handler = Handler()
+    private val mHandler: Handler = Handler(Looper.getMainLooper())
 
     //now playing background bitmap
     var nowPlayingCustomBackBitmap: Bitmap? = null
@@ -674,7 +671,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     return true
                 }
                 if (PlaylistManager.getInstance(applicationContext)!!.isFavNew(playerService!!.getCurrentTrack()!!.id)) {
-                    PlaylistManager.getInstance(applicationContext)!!.RemoveFromFavNew(playerService!!.getCurrentTrack()!!.id)
+                    PlaylistManager.getInstance(applicationContext)!!.removeFromFavNew(playerService!!.getCurrentTrack()!!.id)
                 } else {
                     PlaylistManager.getInstance(applicationContext)!!.addSongToFav(playerService!!.getCurrentTrack()!!.id)
                     shineButton!!.visibility = View.VISIBLE
@@ -907,7 +904,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                         val playlist_name = input.text.toString().trim { it <= ' ' }
                         if (validatePlaylistName(playlist_name)) {
                             when {
-                                PlaylistManager.getInstance(ApplicationClass.getContext())?.CreatePlaylist(playlist_name) == true -> {
+                                PlaylistManager.getInstance(ApplicationClass.getContext())?.createPlaylist(playlist_name) == true -> {
                                     val ids = mAdapter?.getSongList()?.size?.let { it1 -> IntArray(it1) }
                                     var i = 0
                                     if (ids != null) {
@@ -918,7 +915,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                                         }
                                     }
                                     if (ids != null) {
-                                        PlaylistManager.getInstance(ApplicationClass.getContext())?.AddSongToPlaylist(playlist_name, ids)
+                                        PlaylistManager.getInstance(ApplicationClass.getContext())?.addSongToPlaylist(playlist_name, ids)
                                     }
                                     // Toast.makeText(ActivityNowPlaying.this, "Playlist saved!", Toast.LENGTH_SHORT).show();
                                     Snackbar.make(rootView!!, getString(R.string.playlist_saved), Snackbar.LENGTH_SHORT).show()

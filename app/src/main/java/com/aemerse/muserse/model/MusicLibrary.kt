@@ -93,7 +93,7 @@ class MusicLibrary private constructor() {
             atomicInt.set(0)
             libraryLoadCounter = 0
             Log.v(Constants.TAG, "refreshed")
-            PlaylistManager.getInstance(ApplicationClass.getContext())!!.PopulateUserMusicTable()
+            PlaylistManager.getInstance(ApplicationClass.getContext())!!.populateUserMusicTable()
             LocalBroadcastManager.getInstance(context)
                 .sendBroadcast(Intent(Constants.ACTION.REFRESH_LIB))
             Log.v("See the time", (System.currentTimeMillis() - start).toString() + "")

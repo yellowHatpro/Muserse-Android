@@ -1576,7 +1576,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 when {
                     ValidatePlaylistName(playlist_name) -> {
                         when {
-                            PlaylistManager.getInstance(ApplicationClass.getContext())?.CreatePlaylist(playlist_name) == true -> {
+                            PlaylistManager.getInstance(ApplicationClass.getContext())?.createPlaylist(playlist_name) == true -> {
                                 var tabCount = 0
                                 for (tab: Int in savedTabSeqInt) {
                                     if (tab == Constants.TABS.PLAYLIST) {

@@ -3,7 +3,6 @@ package com.aemerse.muserse.adapter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.preference.PreferenceManager
 import android.view.*
@@ -80,7 +79,7 @@ class PlaylistLibraryAdapter constructor(private val context: Context) : Recycle
             R.id.action_play_next -> AddToQ(Constants.ADD_TO_Q.IMMEDIATE_NEXT)
             R.id.action_add_to_q -> AddToQ(Constants.ADD_TO_Q.AT_LAST)
             R.id.action_clear_playlist -> when {
-                PlaylistManager.getInstance(ApplicationClass.getContext())!!.ClearPlaylist(headers[position]) -> {
+                PlaylistManager.getInstance(ApplicationClass.getContext())!!.clearPlaylist(headers[position]) -> {
                     Snackbar.make(viewParent!!,
                         context.getString(R.string.snack_cleared) + " " + headers[position],
                         Snackbar.LENGTH_SHORT).show()
@@ -96,7 +95,7 @@ class PlaylistLibraryAdapter constructor(private val context: Context) : Recycle
     }
 
     private fun Play() {
-        val temp: ArrayList<dataItem> = PlaylistManager.getInstance(ApplicationClass.getContext())!!.GetPlaylist(headers.get(position))
+        val temp: ArrayList<dataItem> = PlaylistManager.getInstance(ApplicationClass.getContext())!!.getPlaylist(headers.get(position))
         val trackList: ArrayList<Int> = ArrayList()
         for (d: dataItem in temp) {
             trackList.add(d.id)
@@ -116,7 +115,7 @@ class PlaylistLibraryAdapter constructor(private val context: Context) : Recycle
 
     private fun share() {
         val files: ArrayList<Uri> = ArrayList() //for sending multiple files
-        val temp: ArrayList<dataItem> = PlaylistManager.getInstance(ApplicationClass.getContext())!!.GetPlaylist(headers[position])
+        val temp: ArrayList<dataItem> = PlaylistManager.getInstance(ApplicationClass.getContext())!!.getPlaylist(headers[position])
         val trackList: ArrayList<Int> = ArrayList()
         for (d: dataItem in temp) {
             trackList.add(d.id)
@@ -166,7 +165,7 @@ class PlaylistLibraryAdapter constructor(private val context: Context) : Recycle
         val sortOrder: Int =
             (if (positionToAdd == Constants.ADD_TO_Q.AT_LAST) Constants.SORT_ORDER.ASC else Constants.SORT_ORDER.DESC)
         val temp: ArrayList<dataItem> =
-            PlaylistManager.getInstance(context)!!.GetPlaylist(headers.get(position))
+            PlaylistManager.getInstance(context)!!.getPlaylist(headers.get(position))
         val trackList: ArrayList<Int> = ArrayList()
         for (d: dataItem in temp) {
             trackList.add(d.id)
@@ -201,7 +200,7 @@ class PlaylistLibraryAdapter constructor(private val context: Context) : Recycle
                     return@positiveButton
                 }
                 when {
-                    PlaylistManager.getInstance(ApplicationClass.getContext())?.DeletePlaylist(headers.get(position)) == true -> {
+                    PlaylistManager.getInstance(ApplicationClass.getContext())?.deletePlaylist(headers.get(position)) == true -> {
                         //Toast.makeText(context,"Deleted "+headers.get(position),Toast.LENGTH_SHORT).show();
                         Snackbar.make(viewParent!!, context.getString(R.string.deleted) + headers[position], Snackbar.LENGTH_SHORT).show()
                         headers.remove(headers[position])

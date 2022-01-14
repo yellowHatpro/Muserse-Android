@@ -2,6 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
 android {
     compileSdk 31
     defaultConfig {
@@ -17,8 +19,6 @@ android {
 
     signingConfigs {
         release {
-            def keystorePropertiesFile = rootProject.file("keystore.properties")
-
             if (keystorePropertiesFile.exists()) {
                 def keystoreProperties = new Properties()
                 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
@@ -94,9 +94,6 @@ dependencies {
 
     //In App Purchases
     implementation 'com.github.akshaaatt:Google-IAP:1.2.2'
-
-    implementation 'com.jakewharton:butterknife:10.2.3'
-    kapt 'com.jakewharton:butterknife-compiler:10.2.3'
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
     implementation 'io.github.inflationx:viewpump:2.0.3'

@@ -32,7 +32,7 @@ class PlaylistManager private constructor(
      */
     private var context: Context
 ) {
-    fun PopulateUserMusicTable() {
+    fun populateUserMusicTable() {
         Executors.newSingleThreadExecutor().execute {
             try {
                 Log.v(Constants.TAG, "populating")
@@ -105,7 +105,7 @@ class PlaylistManager private constructor(
     /*
     user_addable = only playlist in which user can add songs
      */
-    fun GetPlaylistList(userAddable: Boolean): ArrayList<String> {
+    fun getPlaylistList(userAddable: Boolean): ArrayList<String> {
         if (listOfPlaylists.size == 0) {
             val db: SQLiteDatabase = dbHelperListOfPlaylist.readableDatabase
             dbHelperListOfPlaylist.onCreate(db)
@@ -197,16 +197,16 @@ class PlaylistManager private constructor(
             return temp
         }
 
-    fun CreatePlaylist(playlist_name: String): Boolean {
-        var playlist_name = playlist_name
-        playlist_name = playlist_name.replace(" ", "_")
+    fun createPlaylist(playlist_name: String): Boolean {
+        var playlistName = playlist_name
+        playlistName = playlistName.replace(" ", "_")
         //try adding column
         //DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         var db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
         dbHelperUserMusicData.onCreate(db)
         //create column for newly created playlist
         val insertQuery =
-            "ALTER TABLE " + DbHelperUserMusicData.TABLE_NAME.toString() + " ADD COLUMN " + playlist_name + " INTEGER DEFAULT 0"
+            "ALTER TABLE " + DbHelperUserMusicData.TABLE_NAME.toString() + " ADD COLUMN " + playlistName + " INTEGER DEFAULT 0"
         try {
             db.execSQL(insertQuery)
         } catch (ignored: Exception) {
@@ -215,11 +215,10 @@ class PlaylistManager private constructor(
         //DbHelperListOfPlaylist dbHelperListOfPlaylist = new DbHelperListOfPlaylist(context);
         db = dbHelperListOfPlaylist.writableDatabase
         dbHelperListOfPlaylist.onCreate(db)
-        val where: String =
-            DbHelperListOfPlaylist.KEY_TITLE.toString() + "= '" + playlist_name.replace("'",
+        val where = DbHelperListOfPlaylist.KEY_TITLE + "= '" + playlistName.replace("'",
                 "''") + "'"
         if (db.query(Constants.SYSTEM_PLAYLISTS.PLAYLIST_LIST,
-                arrayOf<String>(DbHelperListOfPlaylist.KEY_TITLE),
+                arrayOf(DbHelperListOfPlaylist.KEY_TITLE),
                 where,
                 null,
                 null,
@@ -227,7 +226,7 @@ class PlaylistManager private constructor(
                 null).count == 0
         ) {
             val c = ContentValues()
-            c.put(DbHelperListOfPlaylist.KEY_TITLE, playlist_name)
+            c.put(DbHelperListOfPlaylist.KEY_TITLE, playlistName)
             db.insert(Constants.SYSTEM_PLAYLISTS.PLAYLIST_LIST, null, c)
 
             //invalidate playlist cache @todo can be better I guess
@@ -237,13 +236,13 @@ class PlaylistManager private constructor(
         return false
     }
 
-    fun DeletePlaylist(playlist_name: String): Boolean {
-        var playlist_name = playlist_name
-        playlist_name = playlist_name.replace(" ", "_")
+    fun deletePlaylist(playlist_name: String): Boolean {
+        var playlistName = playlist_name
+        playlistName = playlistName.replace(" ", "_")
         //delete column is not possible in sqlite
         //just a remove playlist entry from playlist list
         //and clear the column
-        if (playlist_name == Constants.SYSTEM_PLAYLISTS.MOST_PLAYED || playlist_name == Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED || playlist_name == Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED || playlist_name == Constants.SYSTEM_PLAYLISTS.MY_FAV) {
+        if (playlistName == Constants.SYSTEM_PLAYLISTS.MOST_PLAYED || playlistName == Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED || playlistName == Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED || playlistName == Constants.SYSTEM_PLAYLISTS.MY_FAV) {
             return false
         }
 
@@ -252,7 +251,7 @@ class PlaylistManager private constructor(
         var db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
         dbHelperUserMusicData.onCreate(db)
         val c = ContentValues()
-        c.put(playlist_name, 0)
+        c.put(playlistName, 0)
         db.update(DbHelperUserMusicData.TABLE_NAME, c, null, null)
 
         //DbHelperListOfPlaylist dbHelperListOfPlaylist
@@ -263,14 +262,14 @@ class PlaylistManager private constructor(
         //invalidate playlist cache
         listOfPlaylists.clear() //it will be populated automatically on next db call
         return db.delete(Constants.SYSTEM_PLAYLISTS.PLAYLIST_LIST,
-            DbHelperListOfPlaylist.KEY_TITLE.toString() + "= '" + playlist_name.replace("'",
+            DbHelperListOfPlaylist.KEY_TITLE.toString() + "= '" + playlistName.replace("'",
                 "''") + "'",
             null) != 0
     }
 
-    fun AddSongToPlaylist(playlist_name_arg: String, song_ids: IntArray) {
+    fun addSongToPlaylist(playlist_name_arg: String, song_ids: IntArray) {
         Executors.newSingleThreadExecutor().execute(Runnable {
-            val playlist_name = playlist_name_arg.replace(" ", "_")
+            val playlistName = playlist_name_arg.replace(" ", "_")
             val hand: Handler = Handler(Looper.getMainLooper())
             val db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
             dbHelperUserMusicData.onCreate(db)
@@ -279,9 +278,9 @@ class PlaylistManager private constructor(
             if (song_ids.size == 1) {
                 val where: String =
                     (DbHelperUserMusicData.KEY_ID.toString() + "= '" + song_ids[0] + "'"
-                            + " AND \"" + playlist_name + "\" != 0")
+                            + " AND \"" + playlistName + "\" != 0")
                 if (db.query(DbHelperUserMusicData.TABLE_NAME,
-                        arrayOf("\"" + playlist_name + "\""),
+                        arrayOf("\"" + playlistName + "\""),
                         where,
                         null,
                         null,
@@ -290,14 +289,12 @@ class PlaylistManager private constructor(
                         .count > 0
                 ) {
                     hand.post {
-                        Toast.makeText(context,
-                            context.getString(R.string.song_already_exists_in) + playlist_name,
-                            Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.song_already_exists_in) + playlistName, Toast.LENGTH_SHORT).show()
                     }
                     return@Runnable
                 }
             }
-            val max = "MAX($playlist_name)"
+            val max = "MAX($playlistName)"
             val cursor: Cursor = db.query(DbHelperUserMusicData.TABLE_NAME,
                 arrayOf(max),
                 null,
@@ -310,22 +307,22 @@ class PlaylistManager private constructor(
             cursor.close()
             for (id in song_ids) {
                 val c = ContentValues()
-                c.put(playlist_name, ++maxValue)
+                c.put(playlistName, ++maxValue)
                 db.update(DbHelperUserMusicData.TABLE_NAME,
                     c,
                     DbHelperUserMusicData.KEY_ID.toString() + "= ?",
                     arrayOf(id.toString() + ""))
             }
-            val favPlayListName = playlist_name.replace("_", " ")
+            val favPlayListName = playlistName.replace("_", " ")
             if (listOfPlaylists.containsKey(favPlayListName)) {
                 listOfPlaylists[favPlayListName] = listOfPlaylists[favPlayListName]!! + 1
             }
             hand.post(Runnable {
-                if (playlist_name == Constants.SYSTEM_PLAYLISTS.MY_FAV) {
+                if (playlistName == Constants.SYSTEM_PLAYLISTS.MY_FAV) {
                     return@Runnable
                 }
                 val toast: Toast = Toast.makeText(context,
-                    context.getString(R.string.songs_added_in) + playlist_name.replace("_", " "),
+                    context.getString(R.string.songs_added_in) + playlistName.replace("_", " "),
                     Toast.LENGTH_SHORT)
                 toast.setGravity(Gravity.CENTER, 0, 0)
                 toast.show()
@@ -334,20 +331,20 @@ class PlaylistManager private constructor(
     }
 
     fun addSongToFav(id: Int) {
-        val playlist_name: String = DbHelperUserMusicData.KEY_FAV.replace(" ", "_")
+        val playlistName: String = DbHelperUserMusicData.KEY_FAV.replace(" ", "_")
         val db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
         dbHelperUserMusicData.onCreate(db)
-        val max = "MAX($playlist_name)"
+        val max = "MAX($playlistName)"
         val cursor: Cursor =
             db.query(DbHelperUserMusicData.TABLE_NAME, arrayOf(max), null, null, null, null, null)
         cursor.moveToFirst()
         var maxValue: Int = cursor.getInt(0)
         cursor.close()
         val c = ContentValues()
-        c.put(playlist_name, ++maxValue)
+        c.put(playlistName, ++maxValue)
         db.update(DbHelperUserMusicData.TABLE_NAME,
             c,
-            DbHelperUserMusicData.KEY_ID.toString() + "= ?",
+            DbHelperUserMusicData.KEY_ID + "= ?",
             arrayOf(id.toString() + ""))
         val favPlayListName = Constants.SYSTEM_PLAYLISTS.MY_FAV.replace("_", " ")
         if (listOfPlaylists.containsKey(favPlayListName)) {
@@ -356,9 +353,9 @@ class PlaylistManager private constructor(
         }
     }
 
-    fun RemoveSongFromPlaylistNew(playlist_name: String, id: Int) {
-        var playlist_name = playlist_name
-        playlist_name = playlist_name.replace(" ", "_")
+    fun removeSongFromPlaylistNew(playlist_name: String, id: Int) {
+        var playlistName = playlist_name
+        playlistName = playlistName.replace(" ", "_")
         run {
 
             //user playlist
@@ -369,11 +366,11 @@ class PlaylistManager private constructor(
             try {
                 val where: String = DbHelperUserMusicData.KEY_ID + "='" + id + "'"
                 val c = ContentValues()
-                c.put(playlist_name, 0)
+                c.put(playlistName, 0)
                 db.update(DbHelperUserMusicData.TABLE_NAME, c, where, null)
-                if (listOfPlaylists.containsKey(playlist_name.replace("_", " "))) {
-                    listOfPlaylists[playlist_name.replace("_", " ")] =
-                        listOfPlaylists[playlist_name.replace("_", " ")]!! - 1
+                if (listOfPlaylists.containsKey(playlistName.replace("_", " "))) {
+                    listOfPlaylists[playlistName.replace("_", " ")] =
+                        listOfPlaylists[playlistName.replace("_", " ")]!! - 1
                 }
                 Toast.makeText(context,
                     context.getString(R.string.removed_from_playlist),
@@ -386,21 +383,21 @@ class PlaylistManager private constructor(
         }
     }
 
-    fun GetPlaylist(playlist_name: String): ArrayList<dataItem> {
-        var playlist_name = playlist_name
-        Log.d("PlaylistManager", "GetPlaylist: $playlist_name")
-        playlist_name = playlist_name.replace(" ", "_")
-        val trackList: ArrayList<dataItem> = when (playlist_name) {
+    fun getPlaylist(playlist_name: String): ArrayList<dataItem> {
+        var playlistName = playlist_name
+        Log.d("PlaylistManager", "GetPlaylist: $playlistName")
+        playlistName = playlistName.replace(" ", "_")
+        val trackList: ArrayList<dataItem> = when (playlistName) {
             Constants.SYSTEM_PLAYLISTS.MOST_PLAYED -> GetMostPlayed()
-            Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED -> GetRecentlyPlayed()
+            Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED -> getRecentlyPlayed()
             Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED -> GetRecentlyAdded()
-            Constants.SYSTEM_PLAYLISTS.MY_FAV -> GetFav()
-            else -> GetUserPlaylist(playlist_name)
+            Constants.SYSTEM_PLAYLISTS.MY_FAV -> getFav()
+            else -> getUserPlaylist(playlistName)
         }
         return trackList
     }
 
-    fun AddToRecentlyPlayedAndUpdateCount(_id: Int) {
+    fun addToRecentlyPlayedAndUpdateCount(_id: Int) {
 
         //thread for updating play numberOfTracks
         Executors.newSingleThreadExecutor()
@@ -469,7 +466,7 @@ class PlaylistManager private constructor(
         return returnValue
     }
 
-    fun RemoveFromFavNew(id: Int) {
+    fun removeFromFavNew(id: Int) {
         val db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
         dbHelperUserMusicData.onCreate(db)
         val c = ContentValues()
@@ -485,7 +482,7 @@ class PlaylistManager private constructor(
         }
     }
 
-    fun StoreLastPlayingQueueNew(tracklist: ArrayList<Int>) {
+    fun storeLastPlayingQueueNew(tracklist: ArrayList<Int>) {
         Executors.newSingleThreadExecutor().execute {
             val db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
             dbHelperUserMusicData.onCreate(db)
@@ -514,7 +511,7 @@ class PlaylistManager private constructor(
         }
     }
 
-    fun RestoreLastPlayingQueueNew(): ArrayList<Int> {
+    fun restoreLastPlayingQueueNew(): ArrayList<Int> {
 //        DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         val db: SQLiteDatabase = dbHelperUserMusicData.readableDatabase
         dbHelperUserMusicData.onCreate(db)
@@ -542,16 +539,16 @@ class PlaylistManager private constructor(
         return tracklist
     }
 
-    fun ClearPlaylist(playlist_name: String): Boolean {
-        var playlist_name = playlist_name
-        if (listOfPlaylists.containsKey(playlist_name)) {
-            listOfPlaylists[playlist_name] = 0L
+    fun clearPlaylist(playlist_name: String): Boolean {
+        var playlistName = playlist_name
+        if (listOfPlaylists.containsKey(playlistName)) {
+            listOfPlaylists[playlistName] = 0L
         }
-        playlist_name = playlist_name.replace(" ", "_")
-        when (playlist_name) {
-            Constants.SYSTEM_PLAYLISTS.MOST_PLAYED -> playlist_name =
+        playlistName = playlistName.replace(" ", "_")
+        when (playlistName) {
+            Constants.SYSTEM_PLAYLISTS.MOST_PLAYED -> playlistName =
                 DbHelperUserMusicData.KEY_COUNT
-            Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED -> playlist_name =
+            Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED -> playlistName =
                 DbHelperUserMusicData.KEY_TIME_STAMP
             Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED -> return false
             else -> {}
@@ -559,7 +556,7 @@ class PlaylistManager private constructor(
         val db: SQLiteDatabase = dbHelperUserMusicData.writableDatabase
         dbHelperUserMusicData.onCreate(db)
         val query =
-            "UPDATE `" + DbHelperUserMusicData.TABLE_NAME.toString() + "` SET `" + playlist_name + "` = '0'"
+            "UPDATE `" + DbHelperUserMusicData.TABLE_NAME.toString() + "` SET `" + playlistName + "` = '0'"
         try {
             db.execSQL(query)
         } catch (e: Exception) {
@@ -580,7 +577,7 @@ class PlaylistManager private constructor(
     }
 
     //private methods
-    private fun GetFav(): ArrayList<dataItem> {
+    private fun getFav(): ArrayList<dataItem> {
 
         //DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         val db: SQLiteDatabase = dbHelperUserMusicData.readableDatabase
@@ -606,7 +603,7 @@ class PlaylistManager private constructor(
         return tracklist
     }
 
-    private fun GetRecentlyPlayed(): ArrayList<dataItem> {
+    private fun getRecentlyPlayed(): ArrayList<dataItem> {
         // DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         val db: SQLiteDatabase = dbHelperUserMusicData.readableDatabase
         dbHelperUserMusicData.onCreate(db)
@@ -672,21 +669,21 @@ class PlaylistManager private constructor(
         return tracklist
     }
 
-    private fun GetUserPlaylist(playlist_name: String): ArrayList<dataItem> {
-        var playlist_name = playlist_name
-        playlist_name = "\"" + playlist_name + "\""
+    private fun getUserPlaylist(playlist_name: String): ArrayList<dataItem> {
+        var playlistName = playlist_name
+        playlistName = "\"" + playlistName + "\""
 
         //DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         val db: SQLiteDatabase = dbHelperUserMusicData.readableDatabase
         dbHelperUserMusicData.onCreate(db)
-        val where = "$playlist_name != 0"
+        val where = "$playlistName != 0"
         val c: Cursor = db.query(DbHelperUserMusicData.TABLE_NAME,
             arrayOf<String>(DbHelperUserMusicData.KEY_ID),
             where,
             null,
             null,
             null,
-            playlist_name)
+            playlistName)
         val tracklist: ArrayList<dataItem> = ArrayList()
         while (c.moveToNext()) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
@@ -731,13 +728,13 @@ class PlaylistManager private constructor(
 
     //get track count for playlist from db
     private fun getTrackCount(playlist_name: String): Long {
-        var playlist_name = playlist_name
-        playlist_name = playlist_name.replace(" ", "_")
+        var playlistName = playlist_name
+        playlistName = playlistName.replace(" ", "_")
 
         //DbHelperUserMusicData dbHelperUserMusicData = new DbHelperUserMusicData(context);
         val db: SQLiteDatabase = dbHelperUserMusicData.readableDatabase
         dbHelperUserMusicData.onCreate(db)
-        if (playlist_name == Constants.SYSTEM_PLAYLISTS.MOST_PLAYED) {
+        if (playlistName == Constants.SYSTEM_PLAYLISTS.MOST_PLAYED) {
             val where: String = DbHelperUserMusicData.KEY_COUNT + " > 0 "
             val cursor: Cursor = db.query(DbHelperUserMusicData.TABLE_NAME,
                 arrayOf(DbHelperUserMusicData.KEY_ID),
@@ -751,7 +748,7 @@ class PlaylistManager private constructor(
             cursor.close()
             return count.toLong()
         }
-        if (playlist_name == Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED) {
+        if (playlistName == Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED) {
             val where: String = DbHelperUserMusicData.KEY_TIME_STAMP + " > 0 "
             val cursor: Cursor = db.query(DbHelperUserMusicData.TABLE_NAME,
                 arrayOf(DbHelperUserMusicData.KEY_ID),
@@ -765,13 +762,13 @@ class PlaylistManager private constructor(
             cursor.close()
             return count.toLong()
         }
-        if (playlist_name == Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED) {
+        if (playlistName == Constants.SYSTEM_PLAYLISTS.RECENTLY_ADDED) {
             return 50 //very ugly
         }
-        playlist_name = "\"" + playlist_name + "\""
-        val where = "$playlist_name != 0"
+        playlistName = "\"" + playlistName + "\""
+        val where = "$playlistName != 0"
         val count: Long = DatabaseUtils.queryNumEntries(db, DbHelperUserMusicData.TABLE_NAME, where)
-        Log.d("PlaylistManager", "getTrackCount: $playlist_name : $count")
+        Log.d("PlaylistManager", "getTrackCount: $playlistName : $count")
         return count
     }
 
@@ -794,6 +791,6 @@ class PlaylistManager private constructor(
     init {
         dbHelperUserMusicData = DbHelperUserMusicData(context)
         dbHelperListOfPlaylist = DbHelperListOfPlaylist(context)
-        GetPlaylistList(false)
+        getPlaylistList(false)
     }
 }

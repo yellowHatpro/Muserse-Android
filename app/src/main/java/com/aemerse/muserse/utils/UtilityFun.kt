@@ -81,10 +81,10 @@ object UtilityFun {
     fun addToPlaylist(context: Context, song_titles: IntArray?) {
         MaterialDialog(context)
             .title(R.string.select_playlist_title)
-            .listItems(items = PlaylistManager.getInstance(ApplicationClass.getContext())?.GetPlaylistList(true)
+            .listItems(items = PlaylistManager.getInstance(ApplicationClass.getContext())?.getPlaylistList(true)
             , selection = object : ItemListener {
                     override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
-                        PlaylistManager.getInstance(ApplicationClass.getContext())?.AddSongToPlaylist(text.toString(), song_titles!!)
+                        PlaylistManager.getInstance(ApplicationClass.getContext())?.addSongToPlaylist(text.toString(), song_titles!!)
                     }
 
                 })
