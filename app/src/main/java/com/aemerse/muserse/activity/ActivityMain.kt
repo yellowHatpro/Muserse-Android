@@ -43,7 +43,6 @@ import com.afollestad.materialdialogs.customview.getCustomView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.signature.ObjectKey
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
@@ -56,7 +55,6 @@ import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
 import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
-import com.aemerse.muserse.customViews.RoundedImageView
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.MusicLibrary
 import com.aemerse.muserse.model.PlaylistManager
@@ -1168,11 +1166,6 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 iv.viewTreeObserver.removeGlobalOnLayoutListener(this)
             }
         })
-        Glide.with(this)
-            .load(R.drawable.heart_icon)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .transition(DrawableTransitionOptions.withCrossFade())
-            .into(iv)
 
         //dialog.getWindow().getAttributes().windowAnimations = R.style.MyAnimation_Window;
         dialog.show()
@@ -1624,7 +1617,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
         } else {
             textView.text = ""
         }
-        val imageView: RoundedImageView = navigationView!!.getHeaderView(0).findViewById(R.id.navHeaderImageView)
+        val imageView: ImageView = navigationView!!.getHeaderView(0).findViewById(R.id.navHeaderImageView)
         if (personPhotoUrl != null) {
             Glide.with(applicationContext).load(personPhotoUrl)
                 .thumbnail(0.5f)
