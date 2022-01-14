@@ -42,12 +42,6 @@ import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.InputCallback
 import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.auth.api.signin.GoogleSignInResult
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.material.snackbar.Snackbar
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
@@ -143,7 +137,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         WrapContentLinearLayoutManager(this)
     private var mItemTouchHelper: ItemTouchHelper? = null
     private val mHandler: Handler = Handler()
-    private var mGoogleApiClient: GoogleApiClient? = null
 
     //now playing background bitmap
     var nowPlayingCustomBackBitmap: Bitmap? = null
@@ -186,17 +179,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                         controlsWrapper!!.measuredHeight.toString() + "")
                 }
             })
-        if (!ApplicationClass.getPref().getBoolean("never_show_button_again", false)) {
-            val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestEmail()
-                    .build()
-            mGoogleApiClient = GoogleApiClient.Builder(this)
-                .enableAutoManage(this) { connectionResult ->
-                    Log.d(Constants.TAG, "onConnectionFailed:$connectionResult")
-                }
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build()
-        }
         if (intent.action != null) {
             if ((intent.action == Constants.ACTION.OPEN_FROM_FILE_EXPLORER)) {
                 isInvokedFromFileExplorer = true
@@ -742,37 +724,46 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     .putExtra("ad", true))
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             }
-            R.id.action_go_to_artist -> if (trackItem != null) {
-                val art_intent: Intent = Intent(this, ActivitySecondaryLibrary::class.java)
-                art_intent.putExtra("status", Constants.FRAGMENT_STATUS.ARTIST_FRAGMENT)
-                art_intent.putExtra("key", trackItem.artist_id)
-                art_intent.putExtra("title", trackItem.getArtist()!!.trim { it <= ' ' })
-                startActivity(art_intent)
-            } else {
-                Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
-                    .show()
+            R.id.action_go_to_artist -> when {
+                trackItem != null -> {
+                    val artIntent = Intent(this, ActivitySecondaryLibrary::class.java)
+                    artIntent.putExtra("status", Constants.FRAGMENT_STATUS.ARTIST_FRAGMENT)
+                    artIntent.putExtra("key", trackItem.artist_id)
+                    artIntent.putExtra("title", trackItem.getArtist()!!.trim { it <= ' ' })
+                    startActivity(artIntent)
+                }
+                else -> {
+                    Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
+                        .show()
+                }
             }
-            R.id.action_go_to_album -> if (trackItem != null) {
-                val alb_intent = Intent(this, ActivitySecondaryLibrary::class.java)
-                alb_intent.putExtra("status", Constants.FRAGMENT_STATUS.ALBUM_FRAGMENT)
-                alb_intent.putExtra("key", trackItem.albumId)
-                alb_intent.putExtra("title", trackItem.album!!.trim { it <= ' ' })
-                startActivity(alb_intent)
-            } else {
-                Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
-                    .show()
+            R.id.action_go_to_album -> when {
+                trackItem != null -> {
+                    val albIntent = Intent(this, ActivitySecondaryLibrary::class.java)
+                    albIntent.putExtra("status", Constants.FRAGMENT_STATUS.ALBUM_FRAGMENT)
+                    albIntent.putExtra("key", trackItem.albumId)
+                    albIntent.putExtra("title", trackItem.album!!.trim { it <= ' ' })
+                    startActivity(albIntent)
+                }
+                else -> {
+                    Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
+                        .show()
+                }
             }
             R.id.action_share -> try {
-                if (trackItem != null) {
-                    val fileToBeShared: File = File(trackItem.getFilePath())
-                    val fileUris: ArrayList<Uri> = ArrayList<Uri>()
-                    fileUris.add(FileProvider.getUriForFile(this,
-                        applicationContext.packageName + "com.aemerse.music.provider",
-                        fileToBeShared))
-                    UtilityFun.share(this, fileUris, trackItem.title)
-                } else {
-                    Snackbar.make(rootView!!, R.string.error_nothing_to_share, Snackbar.LENGTH_SHORT)
-                        .show()
+                when {
+                    trackItem != null -> {
+                        val fileToBeShared = File(trackItem.getFilePath())
+                        val fileUris = ArrayList<Uri>()
+                        fileUris.add(FileProvider.getUriForFile(this,
+                            applicationContext.packageName + "com.aemerse.music.provider",
+                            fileToBeShared))
+                        UtilityFun.share(this, fileUris, trackItem.title)
+                    }
+                    else -> {
+                        Snackbar.make(rootView!!, R.string.error_nothing_to_share, Snackbar.LENGTH_SHORT)
+                            .show()
+                    }
                 }
             } catch (e: IllegalArgumentException) {
                 try {
@@ -1090,14 +1081,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         }
     }
 
-    fun signIn() {
-        if (mGoogleApiClient == null) {
-            return
-        }
-        val signInIntent: Intent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient!!)
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
-
     //for catching exception generated by recycler view which was causing abend, no other way to handle this
     private inner class WrapContentLinearLayoutManager(context: Context?) :
         LinearLayoutManager(context) {
@@ -1107,40 +1090,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 super.onLayoutChildren(recycler, state)
             } catch (e: IndexOutOfBoundsException) {
                 Log.e("probe", "meet a IOOBE in RecyclerView")
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data!!)!!
-            handleSignInResult(result)
-        }
-    }
-
-    private fun handleSignInResult(result: GoogleSignInResult) {
-        Log.d(Constants.TAG, "handleSignInResult:" + result.isSuccess)
-        when {
-            result.isSuccess -> {
-                // Signed in successfully, show authenticated UI.
-
-                //permanently hide  sign in button on now playing activity
-                ApplicationClass.getPref().edit().putBoolean("never_show_button_again", true).apply()
-                ApplicationClass.hasUserSignedIn = true
-                val acct: GoogleSignInAccount = result.signInAccount ?: return
-
-            }
-            else -> {
-                // some Error or user logged out, either case, update the drawer and give user appropriate info
-                ApplicationClass.hasUserSignedIn = false
-                if (result.status.statusCode == CommonStatusCodes.NETWORK_ERROR) {
-                    Snackbar.make(rootView!!, getString(R.string.network_error), Snackbar.LENGTH_SHORT)
-                        .show()
-                } else {
-                    Snackbar.make(rootView!!, getString(R.string.unknown_error), Snackbar.LENGTH_SHORT)
-                        .show()
-                }
             }
         }
     }

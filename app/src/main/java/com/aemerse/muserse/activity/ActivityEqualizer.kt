@@ -22,7 +22,6 @@ import com.afollestad.materialdialogs.input.InputCallback
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.ItemListener
 import com.afollestad.materialdialogs.list.listItems
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
 import com.aemerse.muserse.uiElementHelper.ColorHelper
@@ -278,8 +277,8 @@ class ActivityEqualizer : AppCompatActivity() {
             Toast.makeText(applicationContext, R.string.equ_reset_toast, Toast.LENGTH_SHORT)
                 .show()
         }
-        loadPresetButton!!.setOnClickListener(View.OnClickListener { showLoadPresetDialog() })
-        saveAsPresetButton!!.setOnClickListener(View.OnClickListener { showSavePresetDialog() })
+        loadPresetButton!!.setOnClickListener { showLoadPresetDialog() }
+        saveAsPresetButton!!.setOnClickListener { showSavePresetDialog() }
         equalizer50HzSeekBar!!.setOnSeekBarChangeListener(equalizer50HzListener)
         equalizer130HzSeekBar!!.setOnSeekBarChangeListener(equalizer130HzListener)
         equalizer320HzSeekBar!!.setOnSeekBarChangeListener(equalizer320HzListener)
@@ -292,12 +291,6 @@ class ActivityEqualizer : AppCompatActivity() {
         reverbSpinner!!.onItemSelectedListener = reverbListener
         enhanceSeekBar!!.setOnSeekBarChangeListener(enhanceListener)
         AsyncInitSlidersTask().execute(ApplicationClass.getService()?.getEqualizerHelper()?.getLastEquSetting())
-        try {
-            val bundle = Bundle()
-            bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "equalizer_launched")
-            UtilityFun.logEvent(bundle)
-        } catch (ignored: Exception) {
-        }
         equalizer50HzSeekBar!!.setOnTouchListener(listener)
         equalizer130HzSeekBar!!.setOnTouchListener(listener)
         equalizer320HzSeekBar!!.setOnTouchListener(listener)

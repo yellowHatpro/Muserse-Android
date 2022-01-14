@@ -15,7 +15,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
 import com.aemerse.muserse.model.Constants
@@ -52,18 +51,6 @@ class BatchDownloaderService : Service(), Lyrics.Callback {
                 mBuilder!!.setOngoing(false)
                 mNotificationManager!!.notify(Constants.NOTIFICATION_ID.BATCH_DOWNLOADER,
                     mBuilder!!.build())
-                try {
-                    val size: Int = MusicLibrary.instance.getDataItemsForTracks()!!.size
-                    val bundle = Bundle()
-                    bundle.putInt(FirebaseAnalytics.Param.ITEM_ID, 2)
-                    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME,
-                        "batch_download_finished $size")
-                    bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "batch_download")
-                    //Logs an app event.
-                    FirebaseAnalytics.getInstance(this)
-                        .logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
-                } catch (ignored: Exception) {
-                }
             }
             CANCELLED -> {
                 mBuilder!!.setOngoing(false)

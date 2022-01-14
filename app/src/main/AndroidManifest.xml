@@ -234,16 +234,6 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name="com.aemerse.muserse.fcm.MyFirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-
-        <service android:name="com.aemerse.muserse.fcm.MyFirebaseMessagingService$GeneratePictureStyleNotification$NotificationActionService" />
-
         <receiver android:name="com.aemerse.muserse.widget.WidgetReceiver"
             android:exported="false">
             <intent-filter>
@@ -252,14 +242,6 @@
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/appwidget_info" />
         </receiver>
-
-        <!-- Bluetooth playback receivers testing
-        <receiver android:name=".utils.BluetoothReceiver"  android:exported="true">
-            <intent-filter>
-                <action android:name="android.bluetooth.device.action.ACL_CONNECTED"/>
-                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
-            </intent-filter>
-        </receiver>g-->
 
         <provider
             android:name="com.aemerse.muserse.utils.GenericFileProvider"
