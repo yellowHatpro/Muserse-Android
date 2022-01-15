@@ -14,11 +14,239 @@
         tools:openDrawer="start"
         >
 
-        <include
-            layout="@layout/app_bar_main"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/root_view_main_activity"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            tools:context="com.aemerse.muserse.activity.ActivityMain">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/app_bar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorTransparent"
+                android:theme="@style/AppTheme.AppBarOverlay">
+
+                <com.google.android.material.appbar.CollapsingToolbarLayout
+                    android:id="@+id/main.collapsing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:persistentDrawingCache="none"
+                    app:layout_scrollFlags="scroll|enterAlways">
+
+                    <RelativeLayout
+                        android:id="@+id/dominant_color_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:id="@+id/mini_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/abm_mini_player_height"
+                            android:layout_below="@+id/toolbar"
+                            android:background="?android:selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingLeft="@dimen/abm_mini_player_padd_left_right"
+                            android:paddingRight="@dimen/abm_mini_player_padd_left_right"
+                            android:paddingBottom="@dimen/abm_mini_player_padd_left_right"
+                            app:layout_collapseMode="pin"
+                            tools:ignore="UnusedAttribute">
+
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/album_art_mini_player_wrapper"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_margin="5dp"
+                                android:scaleType="centerCrop"
+                                android:shape="ring"
+                                android:thicknessRatio="1.9"
+                                android:transitionName="@string/transition">
+
+                                <ImageView
+                                    android:id="@+id/album_art_mini_player"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_alignParentTop="true"
+                                    android:layout_centerHorizontal="true"
+                                    android:scaleType="centerCrop"
+                                    tools:ignore="ContentDescription" />
+
+                            </androidx.cardview.widget.CardView>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:orientation="vertical"
+                                android:padding="@dimen/abm_title_and_art_padd_combined">
+
+                                <TextView
+                                    android:id="@+id/song_name_mini_player"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:ellipsize="end"
+                                    android:gravity="center_vertical"
+                                    android:maxLines="1"
+                                    android:paddingLeft="@dimen/abm_title_and_art_padd"
+                                    android:paddingRight="@dimen/abm_title_and_art_padd"
+                                    android:scrollHorizontally="true"
+                                    android:text="@string/abm_song_name_mini_player"
+                                    android:textColor="@color/colorwhite"
+                                    android:textSize="@dimen/abm_mini_player_song" />
+
+                                <TextView
+                                    android:id="@+id/artist_mini_player"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="start|center_vertical"
+                                    android:layout_weight="1"
+                                    android:ellipsize="end"
+                                    android:gravity="center_vertical"
+                                    android:maxLines="1"
+                                    android:paddingLeft="@dimen/abm_title_and_art_padd"
+                                    android:paddingRight="@dimen/abm_title_and_art_padd"
+                                    android:scrollHorizontally="true"
+                                    android:textColor="@color/colorwhite"
+                                    android:textSize="@dimen/abm_mini_player_artist"/>
+
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/play_pause_mini_player"
+                                android:layout_width="@dimen/action_bar_size"
+                                android:layout_height="@dimen/action_bar_size"
+                                android:padding="@dimen/abm_play_next_padd"
+                                android:src="@drawable/ic_play_arrow_black_24dp"
+                                tools:ignore="ContentDescription" />
+
+                            <ImageView
+                                android:id="@+id/next_mini_plaayrer"
+                                android:layout_width="@dimen/action_bar_size"
+                                android:layout_height="@dimen/action_bar_size"
+                                android:padding="@dimen/abm_play_next_padd"
+                                android:src="@drawable/ic_skip_next_black_24dp"
+                                tools:ignore="ContentDescription" />
+
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.Toolbar
+                            android:id="@+id/toolbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/action_bar_size"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:minHeight="@dimen/action_bar_size"
+                            app:layout_collapseMode="pin"
+                            app:popupTheme="@style/AppTheme.PopupOverlay"
+                            app:titleTextColor="@color/primary_text_color" />
+
+                    </RelativeLayout>
+
+                </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <View
+                android:id="@+id/gradientBackGroundView"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
+
+            <RelativeLayout
+                android:id="@+id/content_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                tools:context="com.aemerse.muserse.activity.ActivityMain">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorTransparent"
+                    app:tabMode="scrollable"
+                    app:tabGravity="center"
+                    app:tabTextAppearance="@style/TabText"
+                    app:tabSelectedTextColor="@color/colorwhite"
+                    app:tabMinWidth="@dimen/cm_tab_width_min" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/tabs">
+
+                    <View
+                        android:id="@+id/overlay_for_gradient"
+                        android:visibility="gone"
+                        android:background="@color/blackOverlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+                    <ImageView
+                        android:id="@+id/image_view_view_pager"
+                        android:scaleType="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:ignore="ContentDescription" />
+
+                    <View
+                        android:id="@+id/overlay_for_custom_background"
+                        android:background="@drawable/black_overlay"
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+                        android:layout_height="match_parent"/>
+
+                    <androidx.viewpager.widget.ViewPager
+                        android:id="@+id/viewpager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                        />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/border_view"
+                    android:padding="10dp"
+                    android:layout_width="match_parent"
+                    android:background="@drawable/border_2dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal" />
+
+            </RelativeLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_right_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom|end"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
+                android:src="@drawable/ic_shuffle_black_24dp"
+                tools:ignore="ContentDescription" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_lock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom|start"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
+                android:src="@drawable/ic_lock_open_black_24dp"
+                tools:ignore="ContentDescription" />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

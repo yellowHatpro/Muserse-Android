@@ -25,7 +25,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.PopupMenu
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -35,8 +34,17 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager.widget.ViewPager
-import butterknife.BindView
-import butterknife.ButterKnife
+import com.aemerse.muserse.ApplicationClass
+import com.aemerse.muserse.R
+import com.aemerse.muserse.databinding.ActivityMainBinding
+import com.aemerse.muserse.model.Constants
+import com.aemerse.muserse.model.MusicLibrary
+import com.aemerse.muserse.model.PlaylistManager
+import com.aemerse.muserse.service.PlayerService
+import com.aemerse.muserse.uiElementHelper.ColorHelper
+import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
+import com.aemerse.muserse.utils.AppLaunchCountManager
+import com.aemerse.muserse.utils.UtilityFun
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -47,20 +55,9 @@ import com.bumptech.glide.signature.ObjectKey
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import com.aemerse.muserse.ApplicationClass
-import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.ColorHelper
-import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
-import com.aemerse.muserse.model.Constants
-import com.aemerse.muserse.model.MusicLibrary
-import com.aemerse.muserse.model.PlaylistManager
-import com.aemerse.muserse.service.PlayerService
-import com.aemerse.muserse.utils.AppLaunchCountManager
-import com.aemerse.muserse.utils.UtilityFun
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import java.io.File
 import java.util.*
@@ -75,52 +72,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     private var mReceiverForMiniPLayerUpdate: BroadcastReceiver? = null
     private var mReceiverForLibraryRefresh: BroadcastReceiver? = null
 
-    @JvmField @BindView(R.id.viewpager)
-    var viewPager: ViewPager? = null
     private var viewPagerAdapter: ViewPagerAdapter? = null
-
-    @JvmField @BindView(R.id.play_pause_mini_player)
-    var buttonPlay: ImageView? = null
-
-    @JvmField @BindView(R.id.next_mini_plaayrer)
-    var buttonNext: ImageView? = null
-
-    @JvmField @BindView(R.id.album_art_mini_player)
-    var albumArt: ImageView? = null
-
-    @JvmField @BindView(R.id.song_name_mini_player)
-    var songNameMiniPlayer: TextView? = null
-
-    @JvmField @BindView(R.id.artist_mini_player)
-    var artistNameMiniPlayer: TextView? = null
-
-    @JvmField @BindView(R.id.mini_player)
-    var miniPlayer: View? = null
-
-    @JvmField @BindView(R.id.nav_view)
-    var navigationView: NavigationView? = null
-
-    @JvmField @BindView(R.id.drawer_bg)
-    var navViewBack: ImageView? = null
-
-    @JvmField @BindView(R.id.fab_right_side)
-    var fab_right_side: FloatingActionButton? = null
-
-    @JvmField @BindView(R.id.fab_lock)
-    var fab_lock: FloatingActionButton? = null
-
-    //private SeekBar seekBar;
-    @JvmField @BindView(R.id.root_view_main_activity)
-    var rootView: View? = null
-
-    @JvmField @BindView(R.id.album_art_mini_player_wrapper)
-    var miniPlayerWrapper: View? = null
-
-    @JvmField @BindView(R.id.overlay_for_gradient)
-    var gradientOverlay: View? = null
-
-    @JvmField @BindView(R.id.overlay_for_custom_background)
-    var customBackOverlay: View? = null
 
     //bind player service
     private var playerService: PlayerService? = null
@@ -136,6 +88,8 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     //tab sequence
     var savedTabSeqInt: IntArray = intArrayOf(0, 1, 2, 3, 4, 5)
     private var backPressedOnce: Boolean = false
+    private lateinit var binding: ActivityMainBinding
+
     override fun onNewIntent(intent: Intent) {
         //go to tracks tab when clicked on add button in playlist section
         val i: Int = intent.getIntExtra("move_to_tab", -1)
@@ -146,8 +100,8 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             }
             currentItemToBeSet++
         }
-        if (viewPager != null && i != -1) {
-            viewPager!!.currentItem = currentItemToBeSet
+        if (i != -1) {
+            binding.viewpager.currentItem = currentItemToBeSet
         }
         val b: Boolean = intent.getBooleanExtra("refresh", false)
         if (b) {
@@ -168,11 +122,11 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 updateUI(false)
             }
             when {
-                viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentAlbumLibrary -> {
+                viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentAlbumLibrary -> {
                     //this should not happen
                 }
-                viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentLibrary -> {
-                    (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentLibrary)
+                viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentLibrary -> {
+                    (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentLibrary)
                         .updateItem(position, title!!, artist!!, album!!)
                 }
             }
@@ -180,9 +134,10 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
         super.onNewIntent(intent)
     }
 
-    @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
+    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         //bind music service
         //startService(new Intent(this,playerService!!.class));
         ColorHelper.setStatusBarGradiant(this)
@@ -201,8 +156,6 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
 
         //TypeFaceHelper.setDefaultFont(this, "monospace", "DancingScript-Regular.otf");
         setContentView(R.layout.activity_main)
-        ButterKnife.bind(this)
-
         /*seekBar = findViewById(R.id.seekbar);
         seekBar.setMax(100);
         seekBar.setPadding(0,0,0,0);
@@ -214,7 +167,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
         });*/
 
 
-        navigationView!!.setNavigationItemSelectedListener(this)
+        binding.navView.setNavigationItemSelectedListener(this)
         disableNavigationViewScrollbars()
 
         //navigationView.setBackgroundDrawable(ColorHelper.getColoredThemeGradientDrawable());
@@ -233,12 +186,11 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
         }*/title = getString(R.string.abm_title)
         imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         //mHandler = new Handler();
-        val toolbar: Toolbar = findViewById<Toolbar>(R.id.toolbar)
         try {
-            toolbar.setCollapsible(false)
+            binding.toolbar.setCollapsible(false)
         } catch (ignored: Exception) {
         }
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         mReceiverForMiniPLayerUpdate = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 Log.d(Constants.TAG, "onReceive: Update UI")
@@ -249,26 +201,26 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             override fun onReceive(context: Context, intent: Intent) {
                 //updateUI();
                 if (MusicLibrary.instance.defaultTracklistNew.isEmpty()) {
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewMainActivity,
                         getString(R.string.main_act_empty_lib),
                         Snackbar.LENGTH_SHORT).show()
                 }
             }
         }
-        miniPlayer!!.setOnClickListener(this)
-        buttonPlay!!.setOnClickListener(this)
-        buttonNext!!.setOnClickListener(this)
+        binding.miniPlayer.setOnClickListener(this)
+        binding.playPauseMiniPlayer.setOnClickListener(this)
+        binding.nextMiniPlaayrer.setOnClickListener(this)
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         val toggle: ActionBarDrawerToggle = object : ActionBarDrawerToggle(
             this,
             drawer,
-            toolbar,
+            binding.toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close) {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 super.onDrawerSlide(drawerView, slideOffset)
                 Log.d("onDrawerSlide", "onDrawerSlide: " + slideOffset / 2)
-                rootView!!.translationX = slideOffset / 2 * drawerView.width
+                binding.rootViewMainActivity.translationX = slideOffset / 2 * drawerView.width
                 drawer.bringChildToFront(drawerView)
                 drawer.requestLayout()
             }
@@ -293,11 +245,11 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
 
         // 0 - System default   1 - custom
         when (ApplicationClass.getPref().getInt(getString(R.string.pref_nav_library_back), 0)) {
-            0 -> navViewBack!!.setBackgroundDrawable(ColorHelper.getGradientDrawable())
+            0 -> binding.drawerBg.setBackgroundDrawable(ColorHelper.getGradientDrawable())
             1 -> setBlurryBackgroundForNav()
         }
-        setupViewPager(viewPager!!)
-        viewPager!!.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        setupViewPager(binding.viewpager)
+        binding.viewpager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(
                 position: Int,
                 positionOffset: Float,
@@ -306,16 +258,16 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             }
 
             override fun onPageSelected(position: Int) {
-                Log.v(Constants.TAG, "position : " + viewPager!!.currentItem)
+                Log.v(Constants.TAG, "position : " + binding.viewpager.currentItem)
                 invalidateOptionsMenu()
                 if (savedTabSeqInt[position] == Constants.TABS.PLAYLIST) {
-                    fab_right_side!!.setImageDrawable(ContextCompat.getDrawable(this@ActivityMain,
+                    binding.fabRightSide.setImageDrawable(ContextCompat.getDrawable(this@ActivityMain,
                         R.drawable.ic_add_black_24dp))
                 } else {
-                    fab_right_side!!.setImageDrawable(ContextCompat.getDrawable(this@ActivityMain,
+                    binding.fabRightSide.setImageDrawable(ContextCompat.getDrawable(this@ActivityMain,
                         R.drawable.ic_shuffle_black_24dp))
                 }
-                if (!(searchQuery == "")) {
+                if (searchQuery != "") {
                     try {
                         if ((savedTabSeqInt[position] != Constants.TABS.FOLDER
                                     ) && (savedTabSeqInt[position] != Constants.TABS.PLAYLIST
@@ -346,7 +298,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             override fun onPageScrollStateChanged(state: Int) {}
         })
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
-        tabLayout.setupWithViewPager(viewPager)
+        tabLayout.setupWithViewPager(binding.viewpager)
 
         // Iterate over all tabs and set the custom view
         for (i in 0 until tabLayout.tabCount) {
@@ -355,13 +307,12 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 tab.customView = viewPagerAdapter!!.getTabView(i)
             }
         }
-        fab_right_side!!.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
-        fab_right_side!!.setOnClickListener(this)
-        fab_lock!!.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
-        fab_lock!!.setOnClickListener(this)
-        if (ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)
-        ) {
-            fab_lock!!.visibility = View.GONE
+        binding.fabRightSide.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
+        binding.fabRightSide.setOnClickListener(this)
+        binding.fabLock.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
+        binding.fabLock.setOnClickListener(this)
+        if (ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)) {
+            binding.fabLock.visibility = View.GONE
         }
         when {
             ApplicationClass.isLocked() -> {
@@ -379,27 +330,25 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     }
 
     private fun setTextAndIconColor() {
-        songNameMiniPlayer!!.setTextColor(ColorHelper.getPrimaryTextColor())
-        artistNameMiniPlayer!!.setTextColor(ColorHelper.getSecondaryTextColor())
+        binding.songNameMiniPlayer.setTextColor(ColorHelper.getPrimaryTextColor())
+        binding.artistMiniPlayer.setTextColor(ColorHelper.getSecondaryTextColor())
         /*buttonPlay.setColorFilter(ColorHelper.getPrimaryTextColor());
         buttonNext.setColorFilter(ColorHelper.getPrimaryTextColor());*/
     }
 
     private fun disableNavigationViewScrollbars() {
-        if (navigationView != null) {
-            navigationView!!.getChildAt(0)?.isVerticalScrollBarEnabled = false
-        }
+        binding.navView.getChildAt(0)?.isVerticalScrollBarEnabled = false
     }
 
     private fun setSystemDefaultBackground() {
         //findViewById(R.id.image_view_view_pager).setBackgroundDrawable(ColorHelper.getBaseThemeDrawable());
-        gradientOverlay!!.visibility = View.VISIBLE
+        binding.overlayForGradient.visibility = View.VISIBLE
         /*findViewById(R.id.image_view_view_pager)
                 .setBackgroundDrawable(ColorHelper.GetGradientDrawableDark());*/
     }
 
     fun setBlurryBackgroundForMainLib() {
-        customBackOverlay!!.visibility = View.VISIBLE
+        binding.overlayForCustomBackground.visibility = View.VISIBLE
         Glide.with(this)
             .load(Uri.fromFile(File(ApplicationClass.getContext().filesDir
                 .toString() + getString(R.string.main_lib_back_custom_image))))
@@ -409,11 +358,11 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             .into(findViewById(R.id.image_view_view_pager)!!)
     }
 
-    fun setBlurryBackgroundForNav() {
+    private fun setBlurryBackgroundForNav() {
         Glide.with(this)
             .load(Uri.fromFile(File(ApplicationClass.getContext().filesDir.toString() + getString(R.string.nav_back_custom_image))))
             .signature(ObjectKey(System.currentTimeMillis().toString()))
-            .into(navViewBack!!)
+            .into(binding.drawerBg)
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -594,23 +543,25 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             when {
                 playlist_name.length > 2 -> {
                     //if playlist starts with digit, not allowed
-                    if (Character.isDigit(playlist_name[0])) {
-                        Snackbar.make(rootView!!,
-                            getString(R.string.playlist_error_1),
-                            Snackbar.LENGTH_SHORT).show()
-                        return false
+                    return when {
+                        Character.isDigit(playlist_name[0]) -> {
+                            Snackbar.make(binding.rootViewMainActivity,
+                                getString(R.string.playlist_error_1),
+                                Snackbar.LENGTH_SHORT).show()
+                            false
+                        }
+                        else -> true
                     }
-                    return true
                 }
                 else -> {
                     //Toast.makeText(this,"Enter at least 3 characters",Toast.LENGTH_SHORT).show();
-                    Snackbar.make(rootView!!, getString(R.string.playlist_error_2), Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.rootViewMainActivity, getString(R.string.playlist_error_2), Snackbar.LENGTH_SHORT).show()
                     return false
                 }
             }
         } else {
             //Toast.makeText(this,"Only alphanumeric characters allowed",Toast.LENGTH_SHORT).show();
-            Snackbar.make(rootView!!, getString(R.string.playlist_error_3), Snackbar.LENGTH_SHORT)
+            Snackbar.make(binding.rootViewMainActivity, getString(R.string.playlist_error_3), Snackbar.LENGTH_SHORT)
                 .show()
             return false
         }
@@ -640,15 +591,18 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                             .dontAnimate()
                             .error(builder)
                             .placeholder(R.drawable.music)
-                            .into(albumArt!!)
+                            .into(binding.albumArtMiniPlayer)
                     }
-                    if (playerService!!.getStatus() === playerService!!.PLAYING) buttonPlay!!.setImageDrawable(
-                        ContextCompat.getDrawable(this,
-                            R.drawable.ic_pause_black_24dp)) else buttonPlay!!.setImageDrawable(
-                        ContextCompat.getDrawable(this, R.drawable.ic_play_arrow_black_24dp))
+                    when (playerService!!.PLAYING) {
+                        playerService!!.getStatus() -> binding.playPauseMiniPlayer.setImageDrawable(
+                            ContextCompat.getDrawable(this,
+                                R.drawable.ic_pause_black_24dp))
+                        else -> binding.playPauseMiniPlayer.setImageDrawable(
+                            ContextCompat.getDrawable(this, R.drawable.ic_play_arrow_black_24dp))
+                    }
                     setTextAndIconColor()
-                    songNameMiniPlayer!!.text = playerService!!.getCurrentTrack()!!.title
-                    artistNameMiniPlayer!!.text = playerService!!.getCurrentTrack()!!.getArtist()
+                    binding.songNameMiniPlayer.text = playerService!!.getCurrentTrack()!!.title
+                    binding.artistMiniPlayer.text = playerService!!.getCurrentTrack()!!.getArtist()
                     if (expandNeeded) (findViewById<View>(R.id.app_bar_layout) as AppBarLayout).setExpanded(
                         true)
                 }
@@ -730,8 +684,8 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 findViewById<View>(R.id.mini_player).visibility = View.VISIBLE
                 supportFragmentManager.popBackStack()
             } //see if current fragment is folder fragment, if yes, override onBackPressed with fragments own action
-            savedTabSeqInt.get(viewPager!!.currentItem) == Constants.TABS.FOLDER -> {
-                if (viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentFolderLibrary) {
+            savedTabSeqInt.get(binding.viewpager.currentItem) == Constants.TABS.FOLDER -> {
+                if (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentFolderLibrary) {
                     val intent = Intent(NOTIFY_BACK_PRESSED)
                     LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                 }
@@ -754,14 +708,12 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
-        if (viewPager != null) {
-            if ((savedTabSeqInt.get(viewPager!!.currentItem) == Constants.TABS.FOLDER
-                        || savedTabSeqInt[viewPager!!.currentItem] == Constants.TABS.PLAYLIST)
-            ) {
-                for (i in 0 until menu.size()) {
-                    if (R.id.action_sort == menu.getItem(i).itemId) {
-                        menu.getItem(i).isVisible = false
-                    }
+        if ((savedTabSeqInt[binding.viewpager.currentItem] == Constants.TABS.FOLDER
+                    || savedTabSeqInt[binding.viewpager.currentItem] == Constants.TABS.PLAYLIST)
+        ) {
+            for (i in 0 until menu.size()) {
+                if (R.id.action_sort == menu.getItem(i).itemId) {
+                    menu.getItem(i).isVisible = false
                 }
             }
         }
@@ -822,7 +774,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                     startActivity(Intent(this, ActivityEqualizer::class.java))
                 }
                 else -> {
-                    Snackbar.make(rootView!!, R.string.error_equ_not_supported, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootViewMainActivity, R.string.error_equ_not_supported, Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -841,20 +793,20 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             }
         }
         popupMenu.inflate(R.menu.sort_menu)
-        if (savedTabSeqInt[viewPager!!.currentItem] != Constants.TABS.TRACKS) {
+        if (savedTabSeqInt[binding.viewpager.currentItem] != Constants.TABS.TRACKS) {
             popupMenu.menu.removeItem(R.id.action_sort_size)
             popupMenu.menu.removeItem(R.id.action_sort_by_duration)
-            if (savedTabSeqInt[viewPager!!.currentItem] != Constants.TABS.ALBUMS) {
+            if (savedTabSeqInt[binding.viewpager.currentItem] != Constants.TABS.ALBUMS) {
                 popupMenu.menu.removeItem(R.id.action_sort_year)
             }
         }
-        if (savedTabSeqInt.get(viewPager!!.currentItem) != Constants.TABS.ARTIST) {
+        if (savedTabSeqInt[binding.viewpager.currentItem] != Constants.TABS.ARTIST) {
             popupMenu.menu.removeItem(R.id.action_sort_no_of_album)
             popupMenu.menu.removeItem(R.id.action_sort_no_of_tracks)
         }
         popupMenu.menu.findItem(R.id.action_sort_asc).isChecked = ApplicationClass.getPref().getInt(getString(R.string.pref_order_by),
             Constants.SORT_BY.ASC) == Constants.SORT_BY.ASC
-        when (savedTabSeqInt[viewPager!!.currentItem]) {
+        when (savedTabSeqInt[binding.viewpager.currentItem]) {
             Constants.TABS.ALBUMS -> currentPageSort = getString(R.string.pref_album_sort_by)
             Constants.TABS.ARTIST -> currentPageSort = getString(R.string.pref_artist_sort_by)
             Constants.TABS.GENRE -> currentPageSort = getString(R.string.pref_genre_sort_by)
@@ -970,16 +922,16 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
 
     private fun searchAdapters(searchQuery: String) {
         when {
-            viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentAlbumLibrary -> {
-                (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentAlbumLibrary)
+            viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentAlbumLibrary -> {
+                (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentAlbumLibrary)
                     .filter(searchQuery)
             }
-            viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentLibrary -> {
-                (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentLibrary)
+            viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentLibrary -> {
+                (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentLibrary)
                     .filter(searchQuery)
             }
-            viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentFolderLibrary -> {
-                (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentFolderLibrary)
+            viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentFolderLibrary -> {
+                (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentFolderLibrary)
                     .filter(searchQuery)
             }
         }
@@ -1176,7 +1128,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             val browserIntent = Intent(Intent.ACTION_VIEW, parse)
             startActivity(browserIntent)
         } catch (e: Exception) {
-            Snackbar.make(rootView!!, getString(R.string.error_opening_browser), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.rootViewMainActivity, getString(R.string.error_opening_browser), Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -1254,7 +1206,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                     ApplicationClass.getPref().edit().putInt(getString(R.string.pref_sleep_timer), 0).apply()
                     playerService!!.setSleepTimer(0, false)
                     //Toast.makeText(this, "Sleep timer discarded", Toast.LENGTH_LONG).show();
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewMainActivity,
                         getString(R.string.sleep_timer_discarded),
                         Snackbar.LENGTH_SHORT).show()
                 }
@@ -1295,7 +1247,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                             + seek.progress
                             + getString(R.string.main_act_sleep_timer_status_minutes))
                     //Toast.makeText(this, temp, Toast.LENGTH_LONG).show();
-                    Snackbar.make(rootView!!, temp, Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.rootViewMainActivity, temp, Snackbar.LENGTH_SHORT).show()
                 }
             }
             .negativeButton(R.string.cancel)
@@ -1307,10 +1259,9 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
         Log.v("TAG", "Main activity getting destroyed")
         try {
             mHandler.removeCallbacksAndMessages(null)
-            viewPager!!.clearOnPageChangeListeners()
-            viewPager = null
+            binding.viewpager.clearOnPageChangeListeners()
             viewPagerAdapter = null
-            navigationView!!.setNavigationItemSelectedListener(null)
+            binding.navView.setNavigationItemSelectedListener(null)
         } catch (e: NullPointerException) {
             Log.d("TAG", "onDestroy: destroy called because of null player service")
         }
@@ -1323,7 +1274,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 val intent = Intent(applicationContext, ActivityNowPlaying::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                 val options: ActivityOptions = ActivityOptions.makeSceneTransitionAnimation(this,
-                    miniPlayerWrapper,
+                    binding.albumArtMiniPlayerWrapper,
                     getString(R.string.transition))
                 ActivityCompat.startActivityForResult(this,
                     intent,
@@ -1336,7 +1287,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 mHandler.post(colorSwitchRunnablePlay)
                 if (playerService!!.getCurrentTrack() == null) {
                     //Toast.makeText(this,"Nothing to play!",Toast.LENGTH_LONG).show();
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewMainActivity,
                         getString(R.string.nothing_to_play),
                         Snackbar.LENGTH_SHORT).show()
                     return
@@ -1346,12 +1297,15 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 }
                 mLastClickTime = SystemClock.elapsedRealtime()
                 playerService!!.play()
-                if (playerService!!.getStatus() === playerService!!.PLAYING) {
-                    buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
-                        R.drawable.ic_pause_black_24dp))
-                } else {
-                    buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
-                        R.drawable.ic_play_arrow_black_24dp))
+                when (playerService!!.PLAYING) {
+                    playerService!!.getStatus() -> {
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.ic_pause_black_24dp))
+                    }
+                    else -> {
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.ic_play_arrow_black_24dp))
+                    }
                 }
                 setTextAndIconColor()
                 actionMode = startSupportActionMode(this)
@@ -1372,28 +1326,28 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 when {
                     ApplicationClass.isLocked() -> {
                         ApplicationClass.setLocked(false)
-                        fab_lock!!.setImageDrawable(ContextCompat.getDrawable(this,
+                        binding.fabLock.setImageDrawable(ContextCompat.getDrawable(this,
                             R.drawable.ic_lock_open_black_24dp))
                         findViewById<View>(R.id.border_view).visibility = View.GONE
                     }
                     else -> {
                         findViewById<View>(R.id.border_view).visibility = View.VISIBLE
-                        fab_lock!!.setImageDrawable(ContextCompat.getDrawable(this,
+                        binding.fabLock.setImageDrawable(ContextCompat.getDrawable(this,
                             R.drawable.ic_lock_outline_black_24dp))
                         ApplicationClass.setLocked(true)
                     }
                 }
                 val shake1 = AnimationUtils.loadAnimation(this, R.anim.shake_animation)
-                fab_lock!!.startAnimation(shake1)
+                binding.fabLock.startAnimation(shake1)
                 lockInfoDialog()
             }
             R.id.fab_right_side -> when (Constants.TABS.PLAYLIST) {
-                savedTabSeqInt[viewPager!!.currentItem] -> {
+                savedTabSeqInt[binding.viewpager.currentItem] -> {
                     createPlaylistDialog()
                 }
                 else -> {
                     if (ApplicationClass.isLocked()) {
-                        Snackbar.make(rootView!!,
+                        Snackbar.make(binding.rootViewMainActivity,
                             getString(R.string.music_is_locked),
                             Snackbar.LENGTH_SHORT).show()
                         return
@@ -1403,7 +1357,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                             playerService!!.shuffleAll()
                         }
                         else -> {
-                            Snackbar.make(rootView!!,
+                            Snackbar.make(binding.rootViewMainActivity,
                                 getString(R.string.empty_track_list),
                                 Snackbar.LENGTH_SHORT).show()
                         }
@@ -1444,15 +1398,18 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     }
 
     fun hideFab(hide: Boolean) {
-        if (hide && fab_right_side!!.isShown) {
-            fab_right_side!!.hide()
-            if (!ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)) {
-                fab_lock!!.hide()
+        when {
+            hide && binding.fabRightSide.isShown -> {
+                binding.fabRightSide.hide()
+                if (!ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)) {
+                    binding.fabLock.hide()
+                }
             }
-        } else {
-            fab_right_side!!.show()
-            if (!ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)) {
-                fab_lock!!.show()
+            else -> {
+                binding.fabRightSide.show()
+                if (!ApplicationClass.getPref().getBoolean(getString(R.string.pref_hide_lock_button), false)) {
+                    binding.fabLock.show()
+                }
             }
         }
     }
@@ -1518,14 +1475,14 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 ApplicationClass.getPref().edit().putInt(getString(R.string.pref_order_by), Constants.SORT_BY.DESC).apply()
             }
         }
-        Log.v(Constants.TAG, "view pager item" + viewPager!!.currentItem + "")
+        Log.v(Constants.TAG, "view pager item" + binding.viewpager.currentItem + "")
         when {
-            viewPagerAdapter!!.getItem(viewPager!!.currentItem) is FragmentAlbumLibrary -> {
-                (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentAlbumLibrary).sort(
+            viewPagerAdapter!!.getItem(binding.viewpager.currentItem) is FragmentAlbumLibrary -> {
+                (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentAlbumLibrary).sort(
                     sort_id)
             }
             else -> {
-                (viewPagerAdapter!!.getItem(viewPager!!.currentItem) as FragmentLibrary).sort(sort_id)
+                (viewPagerAdapter!!.getItem(binding.viewpager.currentItem) as FragmentLibrary).sort(sort_id)
             }
         }
         return true
@@ -1542,7 +1499,7 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
             .negativeButton(R.string.main_act_lock_info_neg){
                 ApplicationClass.getPref().edit()
                     .putBoolean(getString(R.string.pref_hide_lock_button), true).apply()
-                fab_lock!!.hide()
+                binding.fabLock.hide()
                 ApplicationClass.setLocked(false)
                 findViewById<View>(R.id.border_view).visibility = View.GONE
             }
@@ -1591,13 +1548,13 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                                 }
 
                                 //Toast.makeText(ActivityMain.this, "Playlist created", Toast.LENGTH_SHORT).show();
-                                Snackbar.make(rootView!!,
+                                Snackbar.make(binding.rootViewMainActivity,
                                     getString(R.string.play_list_created),
                                     Snackbar.LENGTH_SHORT).show()
                             }
                             else -> {
                                 //Toast.makeText(ActivityMain.this, "Playlist already exists", Toast.LENGTH_SHORT).show();
-                                Snackbar.make(rootView!!,
+                                Snackbar.make(binding.rootViewMainActivity,
                                     getString(R.string.play_list_already_exists),
                                     Snackbar.LENGTH_SHORT).show()
                             }
@@ -1611,13 +1568,13 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     }
 
     private fun updateDrawerUI(displayName: String?, personPhotoUrl: String?, signedIn: Boolean) {
-        val textView: TextView = navigationView!!.getHeaderView(0).findViewById(R.id.signed_up_user_name)
+        val textView: TextView = binding.navView.getHeaderView(0).findViewById(R.id.signed_up_user_name)
         if (displayName != null) {
             textView.text = displayName
         } else {
             textView.text = ""
         }
-        val imageView: ImageView = navigationView!!.getHeaderView(0).findViewById(R.id.navHeaderImageView)
+        val imageView: ImageView = binding.navView.getHeaderView(0).findViewById(R.id.navHeaderImageView)
         if (personPhotoUrl != null) {
             Glide.with(applicationContext).load(personPhotoUrl)
                 .thumbnail(0.5f)
@@ -1629,11 +1586,14 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
                 1 -> imageView.setImageDrawable(UtilityFun.defaultAlbumArtDrawable)
             }
         }
-        navigationView!!.menu.clear() //clear old inflated items.
-        if (signedIn) {
-            navigationView!!.inflateMenu(R.menu.drawer_menu_logged_in)
-        } else {
-            navigationView!!.inflateMenu(R.menu.drawer_menu_logged_out)
+        binding.navView.menu.clear() //clear old inflated items.
+        when {
+            signedIn -> {
+                binding.navView.inflateMenu(R.menu.drawer_menu_logged_in)
+            }
+            else -> {
+                binding.navView.inflateMenu(R.menu.drawer_menu_logged_out)
+            }
         }
 
         //set red dot if new developer message arrives
@@ -1653,10 +1613,10 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
 
     private fun updateNewDevMessageDot(set: Boolean) {
         if (set) {
-            navigationView!!.menu.findItem(R.id.nav_dev_message)
+            binding.navView.menu.findItem(R.id.nav_dev_message)
                 .setActionView(R.layout.nav_item_dev_message)
         } else {
-            navigationView!!.menu.findItem(R.id.nav_dev_message).actionView = null
+            binding.navView.menu.findItem(R.id.nav_dev_message).actionView = null
         }
     }
 
@@ -1728,7 +1688,6 @@ class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.On
     }
 
     companion object {
-        val WEBSITE: String = "http://www.thetechguru.in"
         val GITHUB: String = "https://github.com/akshaaatt/Muserse"
         val LYRIC_CARD_GIF: String = "https://media.giphy.com/media/2w6JlMibDu9ZL9xVuB/giphy.gif"
         val NOTIFY_BACK_PRESSED: String = "BACK_PRESSED"
