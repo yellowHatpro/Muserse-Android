@@ -24,8 +24,7 @@ import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.MusicLibrary
 import java.util.concurrent.Executors
 
-
-class FragmentFolderLibrary : Fragment(), SwipeRefreshLayout.OnRefreshListener /*ActionMode.Callback*/ {
+class FragmentFolderLibrary : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private var mRecyclerView: RecyclerView? = null
     private var adapter: FolderLibraryAdapter? = null
     private val mReceiverForLibraryRefresh: BroadcastReceiver

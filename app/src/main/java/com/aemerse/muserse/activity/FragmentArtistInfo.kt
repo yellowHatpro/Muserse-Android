@@ -19,16 +19,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
+import com.aemerse.muserse.databinding.FragmentArtistInfoBinding
 import com.aemerse.muserse.interfaces.DoubleClickListener
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.TrackItem
@@ -37,124 +33,100 @@ import com.aemerse.muserse.qlyrics.offlineStorage.OfflineStorageArtistBio
 import com.aemerse.muserse.qlyrics.tasks.DownloadArtInfoThread
 import com.aemerse.muserse.service.PlayerService
 import com.aemerse.muserse.utils.UtilityFun
-import com.wang.avi.AVLoadingIndicatorView
 import java.io.*
 import java.net.URL
 
-
 class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
-    private var layout: View? = null
     private var mArtistUpdateReceiver: BroadcastReceiver? = null
     private var mArtistInfo: ArtistInfo? = null
 
-    @JvmField @BindView(R.id.text_view_art_bio_frag)
-    var artBioText: TextView? = null
-
-    @JvmField @BindView(R.id.retry_text_view)
-    var retryText: TextView? = null
-
-    @JvmField @BindView(R.id.update_track_metadata)
-    var updateTagsText: TextView? = null
-
-    @JvmField @BindView(R.id.loading_lyrics_animation)
-    var lyricLoadAnimation: AVLoadingIndicatorView? = null
-
-    @JvmField @BindView(R.id.track_artist_artsi_bio_frag)
-    var artistEdit: EditText? = null
-
-    @JvmField @BindView(R.id.button_update_metadata)
-    var buttonUpdateMetadata: Button? = null
-
-    //@JvmField @BindView(R.id.ad_view_wrapper) View adViewWrapper;
-    //@JvmField @BindView(R.id.adView)  AdView mAdView;
-    //@JvmField @BindView(R.id.ad_close)  TextView adCloseText;
     private var playerService: PlayerService? = null
+
+    private var _binding: FragmentArtistInfoBinding? = null
+    private val binding get() = _binding!!
+
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         Log.v("frag", isVisibleToUser.toString() + "")
-        /*if(isVisibleToUser && mAdView!=null){
-            mAdView.resume();
-        }else {
-            if(mAdView!=null){
-                mAdView.pause();
-            }
-        }*/super.setUserVisibleHint(isVisibleToUser)
+        super.setUserVisibleHint(isVisibleToUser)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        layout = inflater.inflate(R.layout.fragment_artist_info, container, false)
-        ButterKnife.bind(this, layout!!)
+    ): View {
+        _binding = FragmentArtistInfoBinding.inflate(inflater, container, false)
         playerService = ApplicationClass.getService()
         if (ApplicationClass.getService() == null) {
             UtilityFun.restartApp()
-            return layout
+            return binding.root
         }
         playerService = ApplicationClass.getService()
-        buttonUpdateMetadata!!.setOnClickListener(object : View.OnClickListener {
+        binding.buttonUpdateMetadata.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View) {
                 val item: TrackItem = playerService!!.getCurrentTrack() ?: return
-                val edited_artist: String = artistEdit!!.text.toString().trim { it <= ' ' }
-                if (edited_artist.isEmpty()) {
+                val editedArtist: String = binding.trackArtistArtsiBioFrag.text.toString().trim()
+                if (editedArtist.isEmpty()) {
                     Toast.makeText(context,
                         getString(R.string.te_error_empty_field),
                         Toast.LENGTH_SHORT).show()
                     return
                 }
-                if (!(edited_artist == item.getArtist())) {
+                when {
+                    editedArtist != item.getArtist() -> {
 
-                    //changes made, save those
-                    val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                    val values = ContentValues()
-                    values.put(MediaStore.Audio.Media.ARTIST, edited_artist)
-                    context!!.contentResolver
-                        .update(uri,
-                            values,
-                            MediaStore.Audio.Media.TITLE + "=?",
-                            arrayOf(item.title))
-                    val intent: Intent = Intent(context, ActivityNowPlaying::class.java)
-                    intent.putExtra("refresh", true)
-                    intent.putExtra("position", playerService!!.getCurrentTrackPosition())
-                    intent.putExtra("originalTitle", item.title)
-                    intent.putExtra("title", item.title)
-                    intent.putExtra("artist", edited_artist)
-                    intent.putExtra("album", item.album)
-                    startActivity(intent)
-                    artistEdit!!.visibility = View.GONE
-                    updateTagsText!!.visibility = View.GONE
-                    buttonUpdateMetadata!!.visibility = View.GONE
-                    buttonUpdateMetadata!!.isClickable = false
-                    if (activity != null) {
-                        val view: View? = activity!!.currentFocus
-                        if (view != null) {
-                            (activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?)?.hideSoftInputFromWindow(
-                                view.windowToken,
-                                0)
+                        //changes made, save those
+                        val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                        val values = ContentValues()
+                        values.put(MediaStore.Audio.Media.ARTIST, editedArtist)
+                        context!!.contentResolver
+                            .update(uri,
+                                values,
+                                MediaStore.Audio.Media.TITLE + "=?",
+                                arrayOf(item.title))
+                        val intent: Intent = Intent(context, ActivityNowPlaying::class.java)
+                        intent.putExtra("refresh", true)
+                        intent.putExtra("position", playerService!!.getCurrentTrackPosition())
+                        intent.putExtra("originalTitle", item.title)
+                        intent.putExtra("title", item.title)
+                        intent.putExtra("artist", editedArtist)
+                        intent.putExtra("album", item.album)
+                        startActivity(intent)
+                        binding.trackArtistArtsiBioFrag.visibility = View.GONE
+                        binding.updateTrackMetadata.visibility = View.GONE
+                        binding.buttonUpdateMetadata.visibility = View.GONE
+                        binding.buttonUpdateMetadata.isClickable = false
+                        if (activity != null) {
+                            val view: View? = activity!!.currentFocus
+                            if (view != null) {
+                                (activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?)?.hideSoftInputFromWindow(
+                                    view.windowToken,
+                                    0)
+                            }
                         }
+                        downloadArtInfo()
                     }
-                    downloadArtInfo()
-                } else {
-                    Toast.makeText(context,
-                        getString(R.string.change_tags_to_update),
-                        Toast.LENGTH_SHORT).show()
+                    else -> {
+                        Toast.makeText(context,
+                            getString(R.string.change_tags_to_update),
+                            Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         })
 
-        //retry click listner
-        layout!!.findViewById<View>(R.id.ll_art_bio)
+        //retry click listener
+        binding.root.findViewById<View>(R.id.ll_art_bio)
             .setOnClickListener(object : DoubleClickListener() {
                 override fun onSingleClick(v: View?) {
-                    if (retryText!!.visibility == View.VISIBLE) {
-                        retryText!!.visibility = View.GONE
-                        artBioText!!.visibility = View.VISIBLE
-                        artistEdit!!.visibility = View.GONE
-                        updateTagsText!!.visibility = View.GONE
-                        buttonUpdateMetadata!!.visibility = View.GONE
-                        buttonUpdateMetadata!!.isClickable = false
-                        lyricLoadAnimation!!.visibility = View.GONE
+                    if (binding.retryTextView.visibility == View.VISIBLE) {
+                        binding.retryTextView.visibility = View.GONE
+                        binding.textViewArtBioFrag.visibility = View.VISIBLE
+                        binding.trackArtistArtsiBioFrag.visibility = View.GONE
+                        binding.updateTrackMetadata.visibility = View.GONE
+                        binding.buttonUpdateMetadata.visibility = View.GONE
+                        binding.buttonUpdateMetadata.isClickable = false
+                        binding.loadingLyricsAnimation.visibility = View.GONE
                         downloadArtInfo()
                     }
                 }
@@ -162,13 +134,16 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
                 override fun onDoubleClick(v: View?) {
 
                     //if no connection text, do not hide artist content
-                    if ((retryText!!.text.toString() == getString(R.string.no_connection))) {
+                    if ((binding.retryTextView.text.toString() == getString(R.string.no_connection))) {
                         return
                     }
-                    if (artBioText!!.visibility == View.VISIBLE) {
-                        artBioText!!.visibility = View.GONE
-                    } else {
-                        artBioText!!.visibility = View.VISIBLE
+                    when (binding.textViewArtBioFrag.visibility) {
+                        View.VISIBLE -> {
+                            binding.textViewArtBioFrag.visibility = View.GONE
+                        }
+                        else -> {
+                            binding.textViewArtBioFrag.visibility = View.VISIBLE
+                        }
                     }
                 }
             })
@@ -180,7 +155,7 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
                 updateArtistInfoIfNeeded()
             }
         }
-        return layout
+        return binding.root
     }
 
     private fun downloadArtInfo() {
@@ -188,11 +163,11 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
         if (item?.getArtist() == null) {
             return
         }
-        artBioText!!.text = getString(R.string.artist_info_loading)
+        binding.textViewArtBioFrag.text = getString(R.string.artist_info_loading)
 
         //set loading animation
-        lyricLoadAnimation!!.visibility = View.VISIBLE
-        lyricLoadAnimation!!.show()
+        binding.loadingLyricsAnimation.visibility = View.VISIBLE
+        binding.loadingLyricsAnimation.show()
 
         //see in offlinne db first
         mArtistInfo = OfflineStorageArtistBio.getArtistBioFromTrackItem(item)
@@ -209,11 +184,11 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
             artist = UtilityFun.filterArtistString(artist!!)
             DownloadArtInfoThread(this, artist, item).start()
         } else {
-            artBioText!!.visibility = View.GONE
-            retryText!!.text = getString(R.string.no_connection)
-            retryText!!.visibility = View.VISIBLE
-            lyricLoadAnimation!!.hide()
-            lyricLoadAnimation!!.visibility = View.GONE
+            binding.textViewArtBioFrag.visibility = View.GONE
+            binding.retryTextView.text = getString(R.string.no_connection)
+            binding.retryTextView.visibility = View.VISIBLE
+            binding.loadingLyricsAnimation.hide()
+            binding.loadingLyricsAnimation.visibility = View.GONE
         }
     }
 
@@ -236,11 +211,11 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
     private fun updateArtistInfoIfNeeded() {
         val item: TrackItem? = playerService!!.getCurrentTrack()
         if (item == null) {
-            artBioText!!.visibility = View.GONE
-            retryText!!.text = getString(R.string.no_music_found)
+            binding.textViewArtBioFrag.visibility = View.GONE
+            binding.retryTextView.text = getString(R.string.no_music_found)
             //retryText.setVisibility(View.GONE);
-            retryText!!.visibility = View.VISIBLE
-            lyricLoadAnimation!!.hide()
+            binding.retryTextView.visibility = View.VISIBLE
+            binding.loadingLyricsAnimation.hide()
             return
         }
         if (mArtistInfo != null && mArtistInfo!!.getOriginalArtist().equals(item.getArtist())) {
@@ -266,23 +241,23 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
             return
         }
         //hide loading animation
-        lyricLoadAnimation!!.hide()
-        lyricLoadAnimation!!.visibility = View.GONE
+        binding.loadingLyricsAnimation.hide()
+        binding.loadingLyricsAnimation.visibility = View.GONE
         if (artistInfo.getArtistContent() == null) {
-            retryText!!.text = getString(R.string.artist_info_no_result)
-            retryText!!.visibility = View.VISIBLE
-            artBioText!!.visibility = View.GONE
+            binding.retryTextView.text = getString(R.string.artist_info_no_result)
+            binding.retryTextView.visibility = View.VISIBLE
+            binding.textViewArtBioFrag.visibility = View.GONE
             val tempItem: TrackItem? = playerService!!.getCurrentTrack()
             if (tempItem != null) {
-                artistEdit!!.visibility = View.VISIBLE
-                updateTagsText!!.visibility = View.VISIBLE
-                buttonUpdateMetadata!!.visibility = View.VISIBLE
-                buttonUpdateMetadata!!.isClickable = true
-                artistEdit!!.setText(tempItem.getArtist())
+                binding.trackArtistArtsiBioFrag.visibility = View.VISIBLE
+                binding.updateTrackMetadata.visibility = View.VISIBLE
+                binding.buttonUpdateMetadata.visibility = View.VISIBLE
+                binding.buttonUpdateMetadata.isClickable = true
+                binding.trackArtistArtsiBioFrag.setText(tempItem.getArtist())
             }
             return
         }
-        if ((layout != null) && (activity != null) && (artistInfo.getArtistContent() != null)) {
+        if ((activity != null) && (artistInfo.getArtistContent() != null)) {
             Log.d("onArtInfoDownloaded", "onArtInfoDownloaded: " + artistInfo.getCorrectedArtist())
             val content = artistInfo.getArtistContent()
             val index: Int = content!!.indexOf("Read more")
@@ -315,27 +290,30 @@ class FragmentArtistInfo : Fragment(), ArtistInfo.Callback {
             if (index != -1) {
                 ss.setSpan(clickableSpan, index, index + 9, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-            if (!(content == "")) {
-                artBioText!!.visibility = View.VISIBLE
-                retryText!!.visibility = View.GONE
-                artBioText!!.text = ss
-                artBioText!!.movementMethod = LinkMovementMethod.getInstance()
-                artistEdit!!.visibility = View.GONE
-                updateTagsText!!.visibility = View.GONE
-                buttonUpdateMetadata!!.visibility = View.GONE
-                buttonUpdateMetadata!!.isClickable = false
-                artistEdit!!.setText("")
-            } else {
-                artBioText!!.visibility = View.GONE
-                retryText!!.text = getString(R.string.artist_info_no_result)
-                retryText!!.visibility = View.VISIBLE
-                val tempItem: TrackItem? = playerService!!.getCurrentTrack()
-                if (tempItem != null) {
-                    artistEdit!!.visibility = View.VISIBLE
-                    updateTagsText!!.visibility = View.VISIBLE
-                    buttonUpdateMetadata!!.visibility = View.VISIBLE
-                    buttonUpdateMetadata!!.isClickable = true
-                    artistEdit!!.setText(tempItem.getArtist())
+            when {
+                content != "" -> {
+                    binding.textViewArtBioFrag.visibility = View.VISIBLE
+                    binding.retryTextView.visibility = View.GONE
+                    binding.textViewArtBioFrag.text = ss
+                    binding.textViewArtBioFrag.movementMethod = LinkMovementMethod.getInstance()
+                    binding.trackArtistArtsiBioFrag.visibility = View.GONE
+                    binding.updateTrackMetadata.visibility = View.GONE
+                    binding.buttonUpdateMetadata.visibility = View.GONE
+                    binding.buttonUpdateMetadata.isClickable = false
+                    binding.trackArtistArtsiBioFrag.setText("")
+                }
+                else -> {
+                    binding.textViewArtBioFrag.visibility = View.GONE
+                    binding.retryTextView.text = getString(R.string.artist_info_no_result)
+                    binding.retryTextView.visibility = View.VISIBLE
+                    val tempItem: TrackItem? = playerService!!.getCurrentTrack()
+                    if (tempItem != null) {
+                        binding.trackArtistArtsiBioFrag.visibility = View.VISIBLE
+                        binding.updateTrackMetadata.visibility = View.VISIBLE
+                        binding.buttonUpdateMetadata.visibility = View.VISIBLE
+                        binding.buttonUpdateMetadata.isClickable = true
+                        binding.trackArtistArtsiBioFrag.setText(tempItem.getArtist())
+                    }
                 }
             }
 

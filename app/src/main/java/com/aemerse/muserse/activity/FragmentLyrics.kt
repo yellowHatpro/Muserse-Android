@@ -15,8 +15,6 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
 import com.aemerse.muserse.uiElementHelper.BottomOffsetDecoration
@@ -37,7 +35,6 @@ import com.nshmura.snappysmoothscroller.SnappyLayoutManager
 import com.nshmura.snappysmoothscroller.SnappyLinearLayoutManager
 import com.wang.avi.AVLoadingIndicatorView
 import java.util.concurrent.Executors
-
 
 class FragmentLyrics : Fragment(), RecyclerView.OnItemTouchListener, Lyrics.Callback,
     ActionMode.Callback, View.OnClickListener {
