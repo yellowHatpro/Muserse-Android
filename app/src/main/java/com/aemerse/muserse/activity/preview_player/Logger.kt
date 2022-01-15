@@ -3,7 +3,6 @@ package com.aemerse.muserse.activity.preview_player
 import android.text.TextUtils
 import android.util.Log
 
-
 internal object Logger {
     private val TAG: String = "AudioPreview"
     private fun isDebugging(): Boolean {

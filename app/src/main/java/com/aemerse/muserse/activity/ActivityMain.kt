@@ -63,7 +63,6 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class ActivityMain : AppCompatActivity(), ActionMode.Callback, NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private val RC_LOGIN: Int = 100
     private var mLastClickTime: Long = 0

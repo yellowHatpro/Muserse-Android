@@ -23,7 +23,6 @@ import com.aemerse.muserse.R
 import java.io.IOException
 import java.lang.ref.WeakReference
 
-
 class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
     MediaPlayer.OnErrorListener, OnPreparedListener, View.OnClickListener,
     OnAudioFocusChangeListener, OnSeekBarChangeListener, OnTouchListener {

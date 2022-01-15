@@ -4,29 +4,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.ColorHelper
+import com.aemerse.muserse.databinding.ActivityRequestNotificationAccessBinding
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.service.NotificationListenerService
+import com.aemerse.muserse.uiElementHelper.ColorHelper
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 
-
 class ActivityRequestNotificationAccess : AppCompatActivity(), View.OnClickListener {
-    @JvmField @BindView(R.id.text_never_ask)
-    var never_ask: TextView? = null
 
-    @JvmField @BindView(R.id.text_skip)
-    var skip: TextView? = null
+    private lateinit var binding: ActivityRequestNotificationAccessBinding
 
-    @JvmField @BindView(R.id.progressBar)
-    var progressBar: ProgressBar? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         ColorHelper.setStatusBarGradiant(this)
         when (ApplicationClass.getPref().getInt(getString(R.string.pref_theme), Constants.PRIMARY_COLOR.LIGHT)) {
@@ -34,13 +25,13 @@ class ActivityRequestNotificationAccess : AppCompatActivity(), View.OnClickListe
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_request_notification_access)
-        ButterKnife.bind(this)
+        binding = ActivityRequestNotificationAccessBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         //findViewById(R.id.root_view_request_notification_access).setBackgroundDrawable(ColorHelper.GetGradientDrawableDark());
         findViewById<View>(R.id.request_button).setOnClickListener(this)
-        skip!!.setOnClickListener(this)
-        never_ask!!.setOnClickListener(this)
+        binding.textSkip.setOnClickListener(this)
+        binding.textNeverAsk.setOnClickListener(this)
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
@@ -68,13 +59,13 @@ class ActivityRequestNotificationAccess : AppCompatActivity(), View.OnClickListe
             }
             R.id.text_skip -> {
                 launchMainActivity()
-                skip!!.visibility = View.GONE
-                never_ask!!.visibility = View.GONE
-                progressBar!!.visibility = View.VISIBLE
+                binding.textSkip.visibility = View.GONE
+                binding.textNeverAsk.visibility = View.GONE
+                binding.progressBar.visibility = View.VISIBLE
             }
             R.id.text_never_ask -> {
-                never_ask!!.visibility = View.GONE
-                progressBar!!.visibility = View.VISIBLE
+                binding.textNeverAsk.visibility = View.GONE
+                binding.progressBar.visibility = View.VISIBLE
                 ApplicationClass.getPref().edit()
                     .putBoolean(getString(R.string.pref_never_ask_notification_permission), true)
                     .apply()

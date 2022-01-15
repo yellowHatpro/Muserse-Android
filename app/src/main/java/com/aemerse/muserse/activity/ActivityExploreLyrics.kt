@@ -22,9 +22,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -41,8 +38,7 @@ import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.aemerse.muserse.utils.UtilityFun
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 
-class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady,
-    View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
+class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
     @JvmField @BindView(R.id.root_view_lyrics_explore)
     var rootView: View? = null
 

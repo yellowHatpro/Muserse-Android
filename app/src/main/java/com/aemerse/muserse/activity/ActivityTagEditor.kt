@@ -11,41 +11,26 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.*
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import butterknife.BindView
-import butterknife.ButterKnife
-import com.afollestad.materialdialogs.MaterialDialog
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.signature.ObjectKey
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.ColorHelper
+import com.aemerse.muserse.databinding.ActivityTagEditorBinding
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.MusicLibrary
 import com.aemerse.muserse.model.PlaylistManager
 import com.aemerse.muserse.model.TrackItem
+import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.aemerse.muserse.utils.UtilityFun
+import com.afollestad.materialdialogs.MaterialDialog
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.signature.ObjectKey
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import java.io.File
 
-
 class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
-    @JvmField @BindView(R.id.title_te)
-    var title: EditText? = null
-
-    @JvmField @BindView(R.id.artist_te)
-    var artist: EditText? = null
-
-    @JvmField @BindView(R.id.album_te)
-    var album: EditText? = null
-
-    @JvmField @BindView(R.id.album_art_te)
-    var album_art: ImageView? = null
     private var song_id: Int = 0
     private var original_title: String? = null
     private var original_artist: String? = null
@@ -61,6 +46,8 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
 
     //file path where changed image file is stored
     private var new_artwork_path: String = ""
+    private lateinit var binding: ActivityTagEditorBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //if player service not running, kill the app
         if (ApplicationClass.getService() == null) {
@@ -75,8 +62,8 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_tag_editor)
-        ButterKnife.bind(this)
+        binding = ActivityTagEditorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         //show info dialog
         showInfoDialog()
@@ -109,7 +96,7 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(ColorHelper.GetStatusBarColor());
         }*/setTitle(getString(R.string.title_tag_editor))
-        album_art!!.setOnClickListener(this)
+        binding.albumArtTe.setOnClickListener(this)
 
         //get current tags from audio file and populate the fields
         setTagsFromContent()
@@ -123,25 +110,25 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
         if (item == null) {
             return
         }
-        title!!.setText(item!!.title)
+        binding.titleTe.setText(item!!.title)
         song_id = item!!.id
         original_title = item!!.title
-        album!!.setText(item!!.album)
+        binding.albumTe.setText(item!!.album)
         original_album = item!!.album
-        artist!!.setText(item!!.getArtist())
+        binding.artistTe.setText(item!!.getArtist())
         original_artist = item!!.getArtist()
         when (ApplicationClass.getPref().getInt(getString(R.string.pref_default_album_art), 0)) {
             0 -> Glide.with(this)
                 .load(MusicLibrary.instance.getAlbumArtUri(item!!.albumId))
                 .signature(ObjectKey(System.currentTimeMillis().toString()))
                 .placeholder(R.drawable.music)
-                .into(album_art!!)
+                .into(binding.albumArtTe)
             1 -> Glide.with(this)
                 .load(MusicLibrary.instance.getAlbumArtUri(item!!.albumId))
                 .signature(ObjectKey(System.currentTimeMillis().toString()))
                 .placeholder(UtilityFun.defaultAlbumArtDrawable)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(album_art!!)
+                .into(binding.albumArtTe)
         }
     }
 
@@ -209,15 +196,10 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun readValues() {
-        edited_title = title!!.text.toString()
-        edited_artist = artist!!.text.toString()
-        edited_album = album!!.text.toString()
-        //edited_genre = genre.getText().toString();
-        if ((edited_title != original_title ||
-                    edited_artist != original_artist ||
-                    edited_album != original_album ||  //!edited_genre.equals(original_genre) ||
-                    new_artwork_path != "")
-        ) {
+        edited_title = binding.titleTe.text.toString()
+        edited_artist = binding.artistTe.text.toString()
+        edited_album = binding.albumTe.text.toString()
+        if (edited_title != original_title || edited_artist != original_artist || edited_album != original_album || new_artwork_path != "") {
             fChanged = true
         }
     }
@@ -323,19 +305,19 @@ class ActivityTagEditor : AppCompatActivity(), View.OnClickListener {
             //dumpIntent(data);
             checkAndCreateAlbumArtDirectory()
             val uri: Uri? = data.data
-            if (uri != null && album_art != null) {
+            if (uri != null) {
                 Log.v(Constants.TAG, data.toString())
-                val file_path_artwork: String? = getRealPathFromURI(uri)
-                if (file_path_artwork == null) {
+                val filePathArtwork = getRealPathFromURI(uri)
+                if (filePathArtwork == null) {
                     Toast.makeText(this,
                         getString(R.string.te_error_image_load),
                         Toast.LENGTH_SHORT).show()
                     return
                 }
                 Glide.with(this)
-                    .load(File(file_path_artwork)) // Uri of the picture
-                    .into(album_art!!)
-                new_artwork_path = file_path_artwork
+                    .load(File(filePathArtwork)) // Uri of the picture
+                    .into(binding.albumArtTe)
+                new_artwork_path = filePathArtwork
             }
         }
     }

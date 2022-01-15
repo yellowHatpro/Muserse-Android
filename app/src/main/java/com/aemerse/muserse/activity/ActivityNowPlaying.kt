@@ -161,7 +161,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
         setContentView(R.layout.activity_now_playing)
-        ButterKnife.bind(this)
 
         //backgroundOverlay.setBackgroundDrawable(ColorHelper.GetGradientDrawable());
         slidingUpPanelLayout!!.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {

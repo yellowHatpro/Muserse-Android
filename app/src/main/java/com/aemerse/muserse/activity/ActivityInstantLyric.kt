@@ -25,8 +25,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -38,6 +36,7 @@ import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.aemerse.muserse.uiElementHelper.ColorHelper.getBaseThemeDrawable
 import com.aemerse.muserse.uiElementHelper.ColorHelper.setStatusBarGradiant
 import com.aemerse.muserse.adapter.LyricsViewAdapter
+import com.aemerse.muserse.databinding.ActivityInstantLyricsBinding
 import com.aemerse.muserse.lyricCard.ActivityLyricCard
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.TrackItem
@@ -70,38 +69,10 @@ import java.net.URL
 import java.util.*
 import java.util.concurrent.Executors
 
-
-class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Callback,
-    ActionMode.Callback, View.OnClickListener, ArtistInfo.Callback {
+class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Callback, ActionMode.Callback, View.OnClickListener, ArtistInfo.Callback {
     private var mLyrics: Lyrics? = null
     private var artistInfo: ArtistInfo? = null
 
-    @JvmField @BindView(R.id.text_view_lyric_status)
-    var lyricStatus: TextView? = null
-
-    @JvmField @BindView(R.id.text_view_artist_info)
-    var artInfoTextView: TextView? = null
-
-    @JvmField @BindView(R.id.lyric_view_wrapper)
-    var lyricWrapper: View? = null
-
-    @JvmField @BindView(R.id.view_artist_info)
-    var viewArtInfoFab: FloatingActionButton? = null
-
-    @JvmField @BindView(R.id.fab_save_lyrics)
-    var saveLyrics: FloatingActionButton? = null
-
-    @JvmField @BindView(R.id.loading_lyrics_animation)
-    var lyricLoadAnimation: AVLoadingIndicatorView? = null
-
-    @JvmField @BindView(R.id.dynamic_lyrics_recycler_view)
-    var recyclerView: RecyclerView? = null
-
-    @JvmField @BindView(R.id.root_view_instant_lyrics)
-    var rootView: View? = null
-
-    @JvmField @BindView(R.id.fab_video)
-    var watchVideo: FloatingActionButton? = null
     private var isLyricsShown = true
     private var isLyricsSaved = false
     private var fThreadCancelled = false
@@ -123,6 +94,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
     private lateinit var progressBar: ProgressBar
     private lateinit var trackTitleEditText: EditText
     private lateinit var artistEditText: EditText
+    private lateinit var binding: ActivityInstantLyricsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,8 +108,9 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_instant_lyrics)
-        ButterKnife.bind(this)
+        binding = ActivityInstantLyricsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar_)
         setSupportActionBar(toolbar)
 
@@ -184,13 +157,13 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             0.5f)
         growAnim.duration = 500
         shrinkAnim.duration = 500
-        watchVideo!!.animation = growAnim
+        binding.fabVideo.animation = growAnim
         growAnim.start()
         growAnim.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {}
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationEnd(animation: Animation) {
-                watchVideo!!.animation = shrinkAnim
+                binding.fabVideo.animation = shrinkAnim
                 shrinkAnim.start()
             }
         })
@@ -198,7 +171,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             override fun onAnimationStart(animation: Animation) {}
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationEnd(animation: Animation) {
-                watchVideo!!.animation = growAnim
+                binding.fabVideo.animation = growAnim
                 growAnim.start()
             }
         })
@@ -224,16 +197,13 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
     }
 
     private fun initializeListeners() {
-        lyricStatus!!.setOnClickListener(this)
-        saveLyrics!!.backgroundTintList =
-            ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
-        saveLyrics!!.setOnClickListener(this)
-        viewArtInfoFab!!.backgroundTintList =
-            ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
-        viewArtInfoFab!!.setOnClickListener(this)
-        watchVideo!!.backgroundTintList =
-            ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
-        watchVideo!!.setOnClickListener(this)
+        binding.textViewLyricStatus.setOnClickListener(this)
+        binding.fabSaveLyrics.backgroundTintList = ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
+        binding.fabSaveLyrics.setOnClickListener(this)
+        binding.viewArtistInfo.backgroundTintList = ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
+        binding.viewArtistInfo.setOnClickListener(this)
+        binding.fabVideo.backgroundTintList = ColorStateList.valueOf(ColorHelper.getColor(R.color.fab_Colors_lyric_view))
+        binding.fabVideo.setOnClickListener(this)
         growShrinkAnimate()
         findViewById<View>(R.id.root_view_instant_lyrics).setBackgroundDrawable(getBaseThemeDrawable())
     }
@@ -282,17 +252,6 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
     }
 
     private fun acquireWindowPowerLock(acquire: Boolean) {
-        /*if(acquire) {
-            if (mWakeLock != null && !mWakeLock.isHeld()) {
-                this.mWakeLock.acquire(10*60*1000L); // / *10 minutes
-            }
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }else {
-            if(mWakeLock!=null && mWakeLock.isHeld()) {
-                this.mWakeLock.release();
-            }
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }*/
         if (acquire) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
@@ -312,7 +271,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             supportActionBar!!.title = track
             supportActionBar!!.subtitle = artist
         }
-        artInfoTextView!!.text = getString(R.string.artist_info_loading)
+        binding.textViewArtistInfo.text = getString(R.string.artist_info_loading)
         val item = TrackItem()
         item.setArtist(artist)
         item.title = track
@@ -322,19 +281,19 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
         var artist = item.getArtist()
         artist = loadArtistInfo(artist)
         if (!ApplicationClass.getPref().getBoolean(getString(R.string.pref_disclaimer_accepted), false)) {
-            lyricStatus!!.visibility = View.VISIBLE
-            recyclerView!!.visibility = View.GONE
-            lyricStatus!!.text = getString(R.string.disclaimer_rejected)
+            binding.textViewLyricStatus.visibility = View.VISIBLE
+            binding.dynamicLyricsRecyclerView.visibility = View.GONE
+            binding.textViewLyricStatus.text = getString(R.string.disclaimer_rejected)
             try {
                 //some exceptions reported in play console, thats why
-                lyricLoadAnimation!!.hide()
+                binding.loadingLyricsAnimation.hide()
             } catch (ignored: Exception) {
             }
             // }
             return
         }
         if (mLyrics != null && mLyrics!!.getOriginalArtist()!!
-                .lowercase(Locale.getDefault()) == artist.toLowerCase() && mLyrics!!.getOriginalTrack()!!
+                .lowercase(Locale.getDefault()) == artist.lowercase(Locale.getDefault()) && mLyrics!!.getOriginalTrack()!!
                 .lowercase(Locale.getDefault()) == track!!.lowercase(Locale.getDefault())
         ) {
             onLyricsDownloaded(mLyrics)
@@ -350,14 +309,14 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
         }
 
         //set loading animation
-        lyricLoadAnimation!!.visibility = View.VISIBLE
-        lyricLoadAnimation!!.show()
+        binding.loadingLyricsAnimation.visibility = View.VISIBLE
+        binding.loadingLyricsAnimation.show()
 
         //lyricCopyRightText.setVisibility(View.GONE);
-        recyclerView!!.visibility = View.GONE
+        binding.dynamicLyricsRecyclerView.visibility = View.GONE
         fThreadCancelled = true
-        lyricStatus!!.visibility = View.VISIBLE
-        lyricStatus!!.text = getString(R.string.lyrics_loading)
+        binding.textViewLyricStatus.visibility = View.VISIBLE
+        binding.textViewLyricStatus.text = getString(R.string.lyrics_loading)
 
 
         //check in offline storage
@@ -374,11 +333,14 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
                 return
             }
         }
-        if (isConnectedToInternet) {
-            fetchLyrics(item.getArtist()!!, item.title!!, null)
-        } else {
-            lyricStatus!!.text = getString(R.string.no_connection)
-            lyricLoadAnimation!!.hide()
+        when {
+            isConnectedToInternet -> {
+                fetchLyrics(item.getArtist()!!, item.title!!, null)
+            }
+            else -> {
+                binding.textViewLyricStatus.text = getString(R.string.no_connection)
+                binding.loadingLyricsAnimation.hide()
+            }
         }
     }
 
@@ -427,20 +389,20 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
 
         //put lyrics to cache
         putLyricsToCache(lyrics)
-        lyricLoadAnimation!!.hide()
+        binding.loadingLyricsAnimation.hide()
         mLyrics = lyrics
         when (Lyrics.POSITIVE_RESULT) {
             lyrics.getFlag() -> {
                 Log.d("ActivityInstantLyric",
                     "onLyricsDownloaded: " + lyrics.getArtist() + " : " + lyrics.getTrack())
-                lyricStatus!!.visibility = View.GONE
+                binding.textViewLyricStatus.visibility = View.GONE
                 fIsStaticLyrics = !mLyrics!!.isLRC()
                 if (!fIsStaticLyrics) {
                     acquireWindowPowerLock(true)
                 }
                 fThreadCancelled = false
-                recyclerView!!.visibility = View.VISIBLE
-                lyricStatus!!.visibility = View.GONE
+                binding.dynamicLyricsRecyclerView.visibility = View.VISIBLE
+                binding.textViewLyricStatus.visibility = View.GONE
                 initializeLyricsView()
                 if (supportActionBar != null) {
                     supportActionBar!!.title = lyrics.getTrack()
@@ -451,9 +413,9 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
                 }
             }
             else -> {
-                lyricStatus!!.text = getString(R.string.tap_to_refresh_lyrics)
-                lyricStatus!!.visibility = View.VISIBLE
-                recyclerView!!.visibility = View.GONE
+                binding.textViewLyricStatus.text = getString(R.string.tap_to_refresh_lyrics)
+                binding.textViewLyricStatus.visibility = View.VISIBLE
+                binding.dynamicLyricsRecyclerView.visibility = View.GONE
             }
         }
         Executors.newSingleThreadExecutor().execute { updateSaveDeleteFabDrawable() }
@@ -468,13 +430,13 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             isLyricsSaved = false
             drawable = resources.getDrawable(R.drawable.ic_save_black_24dp)
         }
-        handler!!.post { saveLyrics!!.setImageDrawable(drawable) }
+        handler!!.post { binding.fabSaveLyrics.setImageDrawable(drawable) }
     }
 
     override fun onArtInfoDownloaded(artistInfo: ArtistInfo?) {
         this.artistInfo = artistInfo
         if (artistInfo!!.getArtistContent() == "") {
-            artInfoTextView!!.setText(R.string.artist_info_no_result)
+            binding.textViewArtistInfo.setText(R.string.artist_info_no_result)
             return
         }
         putArtistInfoToCache(artistInfo)
@@ -492,19 +454,17 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
         //layoutManager.setSnapInterpolator(new DecelerateInterpolator());
 
         // Attach layout manager to the RecyclerView:
-        recyclerView!!.layoutManager = snappyLinearLayoutManager as LayoutManager
-        recyclerView!!.setHasFixedSize(true)
-        recyclerView!!.adapter = adapter!!
-        recyclerView!!.addOnItemTouchListener(this)
+        binding.dynamicLyricsRecyclerView.layoutManager = snappyLinearLayoutManager as LayoutManager
+        binding.dynamicLyricsRecyclerView.setHasFixedSize(true)
+        binding.dynamicLyricsRecyclerView.adapter = adapter!!
+        binding.dynamicLyricsRecyclerView.addOnItemTouchListener(this)
         gestureDetector = GestureDetectorCompat(this, RecyclerViewDemoOnGestureListener())
-        layoutManager = recyclerView!!.layoutManager as LinearLayoutManager?
+        layoutManager = binding.dynamicLyricsRecyclerView.layoutManager as LinearLayoutManager?
         fThreadCancelled = false
         if (!fIsStaticLyrics && !fIsThreadRunning) {
             Executors.newSingleThreadExecutor().execute(lyricUpdater)
             scrollLyricsToCurrentLocation()
         }
-
-        //adapter.notifyDataSetChanged();
     }
 
     private fun scrollLyricsToCurrentLocation() {
@@ -515,7 +475,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
         Log.d("ActivityInstantLyric", "scrollLyricsToCurrentLocation: index $index")
         if (index != -1) {
             // without delay lyrics wont scroll to latest position when called from onResume for some reason
-            Handler().postDelayed({ recyclerView!!.smoothScrollToPosition(index) }, 100)
+            Handler().postDelayed({ binding.dynamicLyricsRecyclerView.smoothScrollToPosition(index) }, 100)
         }
         adapter!!.notifyDataSetChanged()
     }
@@ -530,7 +490,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
 
     private fun shareLyrics() {
         if (mLyrics == null || mLyrics!!.getFlag() != Lyrics.POSITIVE_RESULT) {
-            Snackbar.make(rootView!!, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
+            Snackbar.make(binding.rootViewInstantLyrics, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
                 .show()
             return
         }
@@ -632,20 +592,19 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             R.id.view_artist_info -> {
                 //clear offline stored lyrics if any and reload
                 if (artistInfo == null) {
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewInstantLyrics,
                         getString(R.string.art_info_not_available),
                         Snackbar.LENGTH_SHORT).show()
                     return
                 }
                 toggleLyricsArtInfoView()
             }
-            R.id.lyrics_line -> if (recyclerView != null) {
-                val idx = recyclerView!!.getChildLayoutPosition(view)
+            R.id.lyrics_line ->
+                binding.dynamicLyricsRecyclerView.getChildLayoutPosition(view)
                 if (actionModeActive) {
                     myToggleSelection(idx)
                     return
                 }
-            }
             R.id.text_view_lyric_status -> {
                 mLyrics = null
                 updateLyrics(true)
@@ -655,17 +614,20 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
     }
 
     private fun toggleLyricsArtInfoView() {
-        if (isLyricsShown) {
-            lyricWrapper!!.visibility = View.GONE
-            findViewById<View>(R.id.artist_info_wrapper).visibility = View.VISIBLE
-            artInfoTextView!!.text = artistInfo!!.getArtistContent()
-            isLyricsShown = false
-            viewArtInfoFab!!.setImageDrawable(resources.getDrawable(R.drawable.ic_subject_black_24dp))
-        } else {
-            lyricWrapper!!.visibility = View.VISIBLE
-            findViewById<View>(R.id.artist_info_wrapper).visibility = View.GONE
-            isLyricsShown = true
-            viewArtInfoFab!!.setImageDrawable(resources.getDrawable(R.drawable.ic_info_black_24dp))
+        when {
+            isLyricsShown -> {
+                binding.lyricViewWrapper.visibility = View.GONE
+                findViewById<View>(R.id.artist_info_wrapper).visibility = View.VISIBLE
+                binding.textViewArtistInfo.text = artistInfo!!.getArtistContent()
+                isLyricsShown = false
+                binding.viewArtistInfo.setImageDrawable(resources.getDrawable(R.drawable.ic_subject_black_24dp))
+            }
+            else -> {
+                binding.lyricViewWrapper.visibility = View.VISIBLE
+                findViewById<View>(R.id.artist_info_wrapper).visibility = View.GONE
+                isLyricsShown = true
+                binding.viewArtistInfo.setImageDrawable(resources.getDrawable(R.drawable.ic_info_black_24dp))
+            }
         }
     }
 
@@ -674,7 +636,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
             isLyricsSaved -> {
                 if (clearLyricsFromDB(track!!)) {
                     updateSaveDeleteFabDrawable()
-                    Snackbar.make(rootView!!, getString(R.string.lyrics_removed), Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootViewInstantLyrics, getString(R.string.lyrics_removed), Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -688,19 +650,19 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
                         when {
                             putInstantLyricsInDB(mLyrics, item) -> {
                                 updateSaveDeleteFabDrawable()
-                                Snackbar.make(rootView!!,
+                                Snackbar.make(binding.rootViewInstantLyrics,
                                     getString(R.string.lyrics_saved),
                                     Snackbar.LENGTH_SHORT).show()
                             }
                             else -> {
-                                Snackbar.make(rootView!!,
+                                Snackbar.make(binding.rootViewInstantLyrics,
                                     getString(R.string.error_saving_instant_lyrics),
                                     Snackbar.LENGTH_SHORT).show()
                             }
                         }
                     }
                     else -> {
-                        Snackbar.make(rootView!!,
+                        Snackbar.make(binding.rootViewInstantLyrics,
                             getString(R.string.error_saving_instant_lyrics),
                             Snackbar.LENGTH_SHORT).show()
                     }
@@ -864,28 +826,27 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
     private inner class RecyclerViewDemoOnGestureListener :
         SimpleOnGestureListener() {
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            val view = recyclerView!!.findChildViewUnder(e.x, e.y)
+            val view = binding.dynamicLyricsRecyclerView.findChildViewUnder(e.x, e.y)
             view?.let { onClick(it) }
             return super.onSingleTapConfirmed(e)
         }
 
         override fun onLongPress(e: MotionEvent) {
-            val view = recyclerView!!.findChildViewUnder(e.x, e.y)
+            val view = binding.dynamicLyricsRecyclerView.findChildViewUnder(e.x, e.y)
             if (actionModeActive) {
                 return
             }
             // Start the CAB using the ActionMode.Callback defined above
             actionMode = startActionMode(this@ActivityInstantLyric)
             actionModeActive = true
-            val idx = recyclerView!!.getChildPosition(view!!)
+            val idx = binding.dynamicLyricsRecyclerView.getChildPosition(view!!)
             myToggleSelection(idx)
             super.onLongPress(e)
         }
     }
 
     @SuppressLint("StaticFieldLeak")
-    private inner class SetBlurryImagetask :
-        AsyncTask<ArtistInfo?, String?, Bitmap?>() {
+    private inner class SetBlurryImagetask : AsyncTask<ArtistInfo?, String?, Bitmap?>() {
         var b: Bitmap? = null
 
         override fun doInBackground(vararg p0: ArtistInfo?): Bitmap? {
@@ -943,7 +904,7 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
                 val firstVisibleItem = layoutManager!!.findFirstVisibleItemPosition()
                 val lastVisibleItem = layoutManager!!.findLastVisibleItemPosition()
                 if (index != -1 && index > firstVisibleItem && index < lastVisibleItem) {
-                    recyclerView!!.smoothScrollToPosition(index)
+                    binding.dynamicLyricsRecyclerView.smoothScrollToPosition(index)
                 }
             })
             try {

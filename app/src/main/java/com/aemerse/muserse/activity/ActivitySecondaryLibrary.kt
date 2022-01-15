@@ -21,8 +21,6 @@ import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.bumptech.glide.Glide
@@ -53,9 +51,7 @@ import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
-
-class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener,
-    ArtistInfo.Callback {
+class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, ArtistInfo.Callback {
     @JvmField @BindView(R.id.secondaryLibraryList)
     var mRecyclerView: RecyclerView? = null
 
@@ -104,8 +100,6 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener,
     @JvmField @BindView(R.id.root_view_secondary_lib)
     var rootView: View? = null
 
-    @JvmField @BindView(R.id.app_bar_layout_secondary_library)
-    var appBarLayout: AppBarLayout? = null
     private var mLastClickTime: Long = 0
     private var status: Int = 0
     private var key: Int = 0 //text view on which clicked
@@ -113,6 +107,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener,
     private val handler: Handler = Handler(Looper.getMainLooper())
     var playerService: PlayerService? = null
     private val RC_LOGIN: Int = 100
+
     override fun onNewIntent(intent: Intent) {
         try {
             val b: Boolean = intent.getBooleanExtra("refresh", false)
@@ -161,7 +156,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener,
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
         setContentView(R.layout.activity_secondary_library)
-        ButterKnife.bind(this)
+
         val toolbar: Toolbar = findViewById<Toolbar>(R.id.toolbar_)
         try {
             toolbar.setCollapsible(false)

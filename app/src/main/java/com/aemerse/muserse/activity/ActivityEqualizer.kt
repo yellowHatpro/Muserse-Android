@@ -15,20 +15,17 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import butterknife.BindView
-import butterknife.ButterKnife
+import com.aemerse.muserse.ApplicationClass
+import com.aemerse.muserse.R
+import com.aemerse.muserse.customViews.VerticalSeekBar
+import com.aemerse.muserse.equalizer.EqualizerSetting
+import com.aemerse.muserse.model.Constants
+import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.InputCallback
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.ItemListener
 import com.afollestad.materialdialogs.list.listItems
-import com.aemerse.muserse.ApplicationClass
-import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.ColorHelper
-import com.aemerse.muserse.customViews.VerticalSeekBar
-import com.aemerse.muserse.equalizer.EqualizerSetting
-import com.aemerse.muserse.model.Constants
-import com.aemerse.muserse.utils.UtilityFun
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 
 class ActivityEqualizer : AppCompatActivity() {
@@ -36,10 +33,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @JvmField
     @BindView(R.id.equalizerScrollView)
     var mScrollView: ScrollView? = null
-
-    @JvmField
-    @BindView(R.id.equalizerLinearLayout)
-    var equalizerView: View? = null
 
     // 50Hz equalizer controls.
     @JvmField
@@ -50,9 +43,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.text50HzGain)
     var text50HzGainTextView: TextView? = null
 
-    @JvmField
-    @BindView(R.id.text50Hz)
-    var text50Hz: TextView? = null
 
     // 130Hz equalizer controls.
     @JvmField
@@ -76,10 +66,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.text320HzGain)
     var text320HzGainTextView: TextView? = null
 
-    @JvmField
-    @BindView(R.id.text320Hz)
-    var text320Hz: TextView? = null
-
     // 800 Hz equalizer controls.
     @JvmField
     @BindView(R.id.equalizer800Hz)
@@ -88,10 +74,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @JvmField
     @BindView(R.id.text800HzGain)
     var text800HzGainTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.text800Hz)
-    var text800Hz: TextView? = null
 
     // 2 kHz equalizer controls.
     @JvmField
@@ -102,10 +84,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.text2kHzGain)
     var text2kHzGainTextView: TextView? = null
 
-    @JvmField
-    @BindView(R.id.text2kHz)
-    var text2kHz: TextView? = null
-
     // 5 kHz equalizer controls.
     @JvmField
     @BindView(R.id.equalizer5kHz)
@@ -115,9 +93,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.text5kHzGain)
     var text5kHzGainTextView: TextView? = null
 
-    @JvmField
-    @BindView(R.id.text5kHz)
-    var text5kHz: TextView? = null
 
     // 12.5 kHz equalizer controls.
     @JvmField
@@ -127,10 +102,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @JvmField
     @BindView(R.id.text12_5kHzGain)
     var text12_5kHzGainTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.text12_5kHz)
-    var text12_5kHz: TextView? = null
 
     // Equalizer preset controls.
     @JvmField
@@ -145,17 +116,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.resetAllButton)
     var resetAllButton: RelativeLayout? = null
 
-    @JvmField
-    @BindView(R.id.load_preset_text)
-    var loadPresetText: TextView? = null
-
-    @JvmField
-    @BindView(R.id.save_as_preset_text)
-    var savePresetText: TextView? = null
-
-    @JvmField
-    @BindView(R.id.reset_all_text)
-    var resetAllText: TextView? = null
 
     // Temp variables that hold the equalizer's settings.
     private var fiftyHertzLevel = 16
@@ -189,18 +149,6 @@ class ActivityEqualizer : AppCompatActivity() {
     @BindView(R.id.reverb_spinner)
     var reverbSpinner: Spinner? = null
 
-    @JvmField
-    @BindView(R.id.virtualizer_title_text)
-    var virtualizerTitle: TextView? = null
-
-    @JvmField
-    @BindView(R.id.bass_boost_title_text)
-    var bassBoostTitle: TextView? = null
-
-    @JvmField
-    @BindView(R.id.reverb_title_text)
-    var reverbTitle: TextView? = null
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.home -> finish()
@@ -218,10 +166,9 @@ class ActivityEqualizer : AppCompatActivity() {
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
         setContentView(R.layout.activity_equalizer)
-        ButterKnife.bind(this)
 
         //action bar
-        val toolbar: Toolbar = findViewById<Toolbar>(R.id.toolbar_)
+        val toolbar: Toolbar = findViewById(R.id.toolbar_)
         toolbar.setTitle(R.string.equalizer_title)
         setSupportActionBar(toolbar)
 
