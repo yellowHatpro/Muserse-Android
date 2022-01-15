@@ -597,17 +597,20 @@ class ActivityInstantLyric : AppCompatActivity(), OnItemTouchListener, Lyrics.Ca
                 }
                 toggleLyricsArtInfoView()
             }
-            R.id.lyrics_line ->
-                binding.dynamicLyricsRecyclerView.getChildLayoutPosition(view)
+            R.id.lyrics_line -> {
+                val idx = binding.dynamicLyricsRecyclerView.getChildLayoutPosition(view)
                 if (actionModeActive) {
                     myToggleSelection(idx)
                     return
                 }
+            }
             R.id.text_view_lyric_status -> {
                 mLyrics = null
                 updateLyrics(true)
             }
-            R.id.fab_video -> launchYoutube(this, "$track - $artist")
+            R.id.fab_video -> {
+                launchYoutube(this, "$track - $artist")
+            }
         }
     }
 

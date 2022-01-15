@@ -60,7 +60,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
         super.onPause()
     }
 
-    inner class UiHandler(val MSG_UPDATE_PROGRESS: Int = 1000) : Handler(Looper.getMainLooper()) {
+    inner class UiHandler(private val MSG_UPDATE_PROGRESS: Int = 1000) : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 MSG_UPDATE_PROGRESS -> updateProgressForPlayer()
@@ -207,7 +207,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
                     mSeekBar!!.visibility = View.VISIBLE
                 }
                 if (mProgressBar != null) {
-                    mbinding.progressBar.visibility = View.INVISIBLE
+                    mProgressBar!!.visibility = View.INVISIBLE
                     requestedOrientation = mLastOrientationWhileBuffering
                 }
                 if (mPlayPauseBtn != null) {
@@ -369,7 +369,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
 
     private fun handleHttpScheme() {
         if (mProgressBar != null) {
-            mbinding.progressBar.visibility = View.VISIBLE
+            mProgressBar!!.visibility = View.VISIBLE
             mLastOrientationWhileBuffering = requestedOrientation
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         }
@@ -378,7 +378,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
     }
 
     private fun registerNoisyAudioReceiver() {
-        val localIntentFilter: IntentFilter = IntentFilter()
+        val localIntentFilter = IntentFilter()
         localIntentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
         registerReceiver(mAudioNoisyReceiver, localIntentFilter)
         mIsReceiverRegistered = true
@@ -439,7 +439,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
         val containerY1: Int = mContainerView!!.y.toInt()
         val containerX2: Int = (mContainerView!!.x + mContainerView!!.width).toInt()
         val containerY2: Int = (mContainerView!!.y + mContainerView!!.height).toInt()
-        val r: Rect = Rect()
+        val r = Rect()
         r.set(containerX1, containerY1, containerX2, containerY2)
         if (!r.contains(x, y)) {
             stopPlaybackAndTeardown()

@@ -11,8 +11,6 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.aemerse.muserse.R
 import com.aemerse.muserse.activity.ActivityLyricView
 import com.aemerse.muserse.lyricsExplore.Track
@@ -78,27 +76,18 @@ class TopTracksAdapter(private val context: Context, private val trackList: List
         return true
     }
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
-        View.OnClickListener {
-        @JvmField @BindView(R.id.trackInfo)
-        var trackName: TextView? = null
-
-        @JvmField @BindView(R.id.playCount)
-        var playCount: TextView? = null
-
-        @JvmField @BindView(R.id.imageView)
-        var imageView: ImageView? = null
-
-        @JvmField @BindView(R.id.more)
-        var overflow: ImageView? = null
+    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+        var trackName: TextView = itemView.findViewById(R.id.trackInfo)
+        var playCount: TextView = itemView.findViewById(R.id.playCount)
+        var imageView: ImageView = itemView.findViewById(R.id.imageView)
+        var overflow: ImageView = itemView.findViewById(R.id.more)
         override fun onClick(v: View) {
             this@TopTracksAdapter.onClick(v, layoutPosition)
         }
 
         init {
-            ButterKnife.bind(this, itemView)
             itemView.setOnClickListener(this)
-            overflow!!.setOnClickListener(this)
+            overflow.setOnClickListener(this)
         }
     }
 

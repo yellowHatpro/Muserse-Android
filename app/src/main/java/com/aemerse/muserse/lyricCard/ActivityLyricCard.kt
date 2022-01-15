@@ -25,8 +25,16 @@ import androidx.core.provider.FontRequest
 import androidx.core.provider.FontsContractCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
+import com.aemerse.muserse.ApplicationClass
+import com.aemerse.muserse.R
+import com.aemerse.muserse.customViews.ZoomTextView
+import com.aemerse.muserse.databinding.ActivityLyricCardBinding
+import com.aemerse.muserse.model.Constants
+import com.aemerse.muserse.qlyrics.ArtistInfo.ArtistInfo
+import com.aemerse.muserse.qlyrics.offlineStorage.OfflineStorageArtistBio
+import com.aemerse.muserse.qlyrics.tasks.DownloadArtInfoThread
+import com.aemerse.muserse.uiElementHelper.ColorHelper
+import com.aemerse.muserse.utils.UtilityFun
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -40,61 +48,15 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.aemerse.muserse.ApplicationClass
-import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.ColorHelper
-import com.aemerse.muserse.customViews.ZoomTextView
-import com.aemerse.muserse.model.Constants
-import com.aemerse.muserse.qlyrics.ArtistInfo.ArtistInfo
-import com.aemerse.muserse.qlyrics.offlineStorage.OfflineStorageArtistBio
-import com.aemerse.muserse.qlyrics.tasks.DownloadArtInfoThread
-import com.aemerse.muserse.utils.UtilityFun
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.reflect.Type
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
 class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     private val PICK_IMAGE: Int = 0
-
-    @JvmField @BindView(R.id.rv_colors)
-    var recyclerViewColors: RecyclerView? = null
-
-    @JvmField @BindView(R.id.rv_images)
-    var recyclerViewImages: RecyclerView? = null
-
-    @JvmField @BindView(R.id.mainImageLyricCard)
-    var mainImage: ImageView? = null
-
-    @JvmField @BindView(R.id.text_lyric)
-    var lyricText: ZoomTextView? = null
-
-    @JvmField @BindView(R.id.text_artist)
-    var artistText: ZoomTextView? = null
-
-    @JvmField @BindView(R.id.text_track)
-    var trackText: ZoomTextView? = null
-
-    @JvmField @BindView(R.id.dragView)
-    var dragView: View? = null
-
-    @JvmField @BindView(R.id.progressBar)
-    var progressBar: ProgressBar? = null
-
-    @JvmField @BindView(R.id.brightnessSeekBar)
-    var brightnessSeekBar: SeekBar? = null
-
-    @JvmField @BindView(R.id.overImageLayer)
-    var overImageLayer: View? = null
-
-    @JvmField @BindView(R.id.watermark)
-    var watermark: View? = null
-
-    @JvmField @BindView(R.id.root_view_lyric_card)
-    var rootView: View? = null
     var dx: Float = 0f
     var dy: Float = 0f
     private val imagesAdapter: ImagesAdapter = ImagesAdapter()
@@ -103,13 +65,15 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     private val typefaces: MutableList<Typeface> = ArrayList()
     var currentFontPosition: Int = 0
     var typefaceSet: Boolean = false
+    private lateinit var binding: ActivityLyricCardBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ColorHelper.setStatusBarGradiant(this)
         setTheme()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_lyric_card)
-        ButterKnife.bind(this)
+        binding = ActivityLyricCardBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         if (intent.extras == null) {
             Toast.makeText(this, "Missing lyric text", Toast.LENGTH_SHORT).show()
             finish()
@@ -135,9 +99,9 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
         } else {
             ""
         }
-        lyricText!!.text = text
-        artistText!!.text = author
-        trackText!!.text = track
+        binding.textLyric.text = text
+        binding.textArtist.text = author
+        binding.textTrack.text = track
         initiateToolbar()
         fillFonts()
         initiateUI()
@@ -182,14 +146,14 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
 
     private fun initiateUI() {
         //rootView.setBackgroundDrawable(ColorHelper.GetGradientDrawableDark());
-        recyclerViewColors!!.layoutManager = LinearLayoutManager(this,
+        binding.rvColors.layoutManager = LinearLayoutManager(this,
             LinearLayoutManager.HORIZONTAL,
             false)
-        recyclerViewColors!!.adapter = ColorAdapter()
-        recyclerViewImages!!.layoutManager = LinearLayoutManager(this,
+        binding.rvColors.adapter = ColorAdapter()
+        binding.rvImages.layoutManager = LinearLayoutManager(this,
             LinearLayoutManager.HORIZONTAL,
             false)
-        recyclerViewImages!!.adapter = imagesAdapter
+        binding.rvImages.adapter = imagesAdapter
 
         //get images links
         val type: Type = object : TypeToken<MutableMap<String?, String?>?>() {}.type
@@ -202,14 +166,14 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
             imagesAdapter.setUrls(urls)
         }
         initiateDragView()
-        brightnessSeekBar!!.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        binding.brightnessSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, `in`: Int, b: Boolean) {
                 val i: Double = seekBar.progress / 100.0
                 val alpha: Int = Math.round(i * 255).toInt()
                 var hex: String = Integer.toHexString(alpha).uppercase(Locale.getDefault())
                 if (hex.length == 1) hex = "0$hex"
                 try {
-                    overImageLayer!!.setBackgroundColor(Color.parseColor("#" + hex + "000000"))
+                    binding.overImageLayer.setBackgroundColor(Color.parseColor("#" + hex + "000000"))
                 } catch (e: NumberFormatException) {
                     Log.d("ActivityLyricCard", "onProgressChanged: Color parse exception")
                 }
@@ -218,13 +182,13 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
-        brightnessSeekBar!!.progress = 30
+        binding.brightnessSeekBar.progress = 30
     }
 
     private fun initiateDragView() {
-        artistText!!.setOnTouchListener(this)
-        lyricText!!.setOnTouchListener(this)
-        trackText!!.setOnTouchListener(this)
+        binding.textArtist.setOnTouchListener(this)
+        binding.textLyric.setOnTouchListener(this)
+        binding.textTrack.setOnTouchListener(this)
     }
 
     private fun firstTimeLaunch() {
@@ -243,17 +207,17 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                 dy = v.y - event.rawY
             }
             MotionEvent.ACTION_MOVE -> when (v.id) {
-                R.id.text_artist -> artistText!!.animate()
+                R.id.text_artist -> binding.textArtist.animate()
                     .x(event.rawX + dx)
                     .y(event.rawY + dy)
                     .setDuration(0)
                     .start()
-                R.id.text_lyric -> lyricText!!.animate()
+                R.id.text_lyric -> binding.textLyric.animate()
                     .x(event.rawX + dx)
                     .y(event.rawY + dy)
                     .setDuration(0)
                     .start()
-                R.id.text_track -> trackText!!.animate()
+                R.id.text_track -> binding.textTrack.animate()
                     .x(event.rawX + dx)
                     .y(event.rawY + dy)
                     .setDuration(0)
@@ -336,7 +300,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     .descriptionTextColor(R.color.colorwhite)
                     .drawShadow(true)
                     .tintTarget(true),
-                TapTarget.forView(recyclerViewImages!!.layoutManager!!.findViewByPosition(0),
+                TapTarget.forView(binding.rvImages.layoutManager!!.findViewByPosition(0),
                     "You can select custom or artist image from here for background.")
                     .outerCircleColorInt(ColorHelper.getPrimaryColor())
                     .outerCircleAlpha(0.9f)
@@ -379,31 +343,34 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                         Toast.LENGTH_SHORT).show()
                 }
             }
-            R.id.action_remove_watermark -> if (item.isChecked) {
-                item.isChecked = false
-                watermark!!.visibility = View.VISIBLE
-            } else {
-                item.isChecked = true
-                watermark!!.visibility = View.INVISIBLE
+            R.id.action_remove_watermark -> when {
+                item.isChecked -> {
+                    item.isChecked = false
+                    binding.watermark.visibility = View.VISIBLE
+                }
+                else -> {
+                    item.isChecked = true
+                    binding.watermark.visibility = View.INVISIBLE
+                }
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun createImageFile(temp: Boolean): File {
-        dragView!!.destroyDrawingCache() //if not done, image is going to be overridden every time
-        dragView!!.isDrawingCacheEnabled = true
-        val bitmap: Bitmap = dragView!!.drawingCache
-        val dir: File = File(Environment.getExternalStorageDirectory().toString() + "/muserse")
+        binding.dragView.destroyDrawingCache() //if not done, image is going to be overridden every time
+        binding.dragView.isDrawingCacheEnabled = true
+        val bitmap: Bitmap = binding.dragView.drawingCache
+        val dir = File(Environment.getExternalStorageDirectory().toString() + "/muserse")
         dir.mkdirs()
         var fileName: String? = "temp.jpeg"
         if (!temp) {
             fileName = UUID.randomUUID().toString() + ".jpeg"
         }
-        val lyricCardFile: File = File(dir, fileName)
+        val lyricCardFile = File(dir, fileName)
         if (lyricCardFile.exists()) lyricCardFile.delete()
         try {
-            val stream: FileOutputStream = FileOutputStream(lyricCardFile)
+            val stream = FileOutputStream(lyricCardFile)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
             stream.flush()
             stream.close()
@@ -425,7 +392,8 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     lyricCardFile))
             share.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_lyric_card_extra_text))
             startActivity(Intent.createChooser(share, "Share Lyric Card"))
-        } catch (e: Exception) {
+        }
+        catch (e: Exception) {
             Toast.makeText(this,
                 "Error while sharing, lyric card is saved at " + lyricCardFile.absolutePath,
                 Toast.LENGTH_LONG).show()
@@ -469,9 +437,9 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                 override fun onTypefaceRetrieved(typeface: Typeface) {
                     Log.d("ActivityLyricCard", "onTypefaceRetrieved: $typeface")
                     if (!typefaceSet) {
-                        lyricText!!.typeface = typeface
-                        artistText!!.typeface = typeface
-                        trackText!!.typeface = typeface
+                        binding.textLyric.typeface = typeface
+                        binding.textArtist.typeface = typeface
+                        binding.textTrack.typeface = typeface
                         typefaceSet = true
                     }
                     typefaces.add(typeface)
@@ -496,35 +464,35 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     private fun changeFont() {
         if (currentFontPosition >= typefaces.size - 1) {
             currentFontPosition = 0
-            lyricText!!.typeface = typefaces[currentFontPosition]
-            artistText!!.typeface = typefaces[currentFontPosition]
-            trackText!!.typeface = typefaces[currentFontPosition]
+            binding.textLyric.typeface = typefaces[currentFontPosition]
+            binding.textArtist.typeface = typefaces[currentFontPosition]
+            binding.textTrack.typeface = typefaces[currentFontPosition]
         } else {
             val index: Int = ++currentFontPosition
-            lyricText!!.typeface = typefaces[index]
-            artistText!!.typeface = typefaces[index]
-            trackText!!.typeface = typefaces[index]
+            binding.textLyric.typeface = typefaces[index]
+            binding.textArtist.typeface = typefaces[index]
+            binding.textTrack.typeface = typefaces[index]
         }
     }
 
     private fun changeAlignment() {
         when (currentTextAlignment) {
             1 -> {
-                lyricText!!.gravity = Gravity.END
-                artistText!!.gravity = Gravity.END
-                trackText!!.gravity = Gravity.END
+                binding.textLyric.gravity = Gravity.END
+                binding.textArtist.gravity = Gravity.END
+                binding.textTrack.gravity = Gravity.END
                 currentTextAlignment = 2
             }
             2 -> {
-                lyricText!!.gravity = Gravity.START
-                artistText!!.gravity = Gravity.START
-                trackText!!.gravity = Gravity.START
+                binding.textLyric.gravity = Gravity.START
+                binding.textArtist.gravity = Gravity.START
+                binding.textTrack.gravity = Gravity.START
                 currentTextAlignment = 0
             }
             else -> {
-                lyricText!!.gravity = Gravity.CENTER
-                artistText!!.gravity = Gravity.CENTER
-                trackText!!.gravity = Gravity.CENTER
+                binding.textLyric.gravity = Gravity.CENTER
+                binding.textArtist.gravity = Gravity.CENTER
+                binding.textTrack.gravity = Gravity.CENTER
                 currentTextAlignment = 1
             }
         }
@@ -560,7 +528,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     return false
                 }
             })
-            .into(mainImage!!)
+            .into(binding.mainImageLyricCard)
     }
 
     private fun setMainImage(uri: Uri) {
@@ -592,7 +560,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     binding.progressBar.visibility = View.GONE
                     return false
                 }
-            }).into(mainImage!!)
+            }).into(binding.mainImageLyricCard)
     }
 
     fun addCustomImage() {
@@ -603,16 +571,16 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     }
 
     fun addArtistImage() {
-        mainImage!!.setImageBitmap(null)
+        binding.mainImageLyricCard.setImageBitmap(null)
         binding.progressBar.visibility = View.VISIBLE
-        val info = OfflineStorageArtistBio.getArtistInfoFromCache(artistText!!.text.toString())
+        val info = OfflineStorageArtistBio.getArtistInfoFromCache(binding.textArtist.text.toString())
         Log.d("ActivityLyricCard", "addArtistImage: $info")
         when {
             info != null -> {
                 setMainImage(info.getImageUrl()!!)
             }
             UtilityFun.isConnectedToInternet -> {
-                val artist: String = UtilityFun.filterArtistString(artistText!!.text.toString())
+                val artist: String = UtilityFun.filterArtistString(binding.textArtist.text.toString())
                 DownloadArtInfoThread(object : ArtistInfo.Callback {
                     override fun onArtInfoDownloaded(artistInfo: ArtistInfo?) {
                         when {
@@ -646,18 +614,18 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                 val lyric: AppCompatEditText = view.findViewById(R.id.text_lyric)
                 val artist: AppCompatEditText = view.findViewById(R.id.text_artist)
                 val track: AppCompatEditText = view.findViewById(R.id.text_track)
-                lyricText!!.text = lyric.text
-                artistText!!.text = artist.text
-                trackText!!.text = track.text
+                binding.textLyric.text = lyric.text
+                binding.textArtist.text = artist.text
+                binding.textTrack.text = track.text
             }
             .customView(R.layout.dialog_edit_lyric_card_texts, scrollable = true)
         val view: View = builder.getCustomView()
         val lyric: AppCompatEditText = view.findViewById(R.id.text_lyric)
         val artist: AppCompatEditText = view.findViewById(R.id.text_artist)
         val track: AppCompatEditText = view.findViewById(R.id.text_track)
-        lyric.setText(lyricText!!.text)
-        artist.setText(artistText!!.text)
-        track.setText(trackText!!.text)
+        lyric.setText(binding.textLyric.text)
+        artist.setText(binding.textArtist.text)
+        track.setText(binding.textTrack.text)
         builder.show()
     }
 
@@ -695,9 +663,9 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
 
             init {
                 itemView.setOnClickListener {
-                    lyricText!!.setTextColor(Color.parseColor(colors[layoutPosition]))
-                    artistText!!.setTextColor(Color.parseColor(colors[layoutPosition]))
-                    trackText!!.setTextColor(Color.parseColor(colors[layoutPosition]))
+                    binding.textLyric.setTextColor(Color.parseColor(colors[layoutPosition]))
+                    binding.textArtist.setTextColor(Color.parseColor(colors[layoutPosition]))
+                    binding.textTrack.setTextColor(Color.parseColor(colors[layoutPosition]))
                 }
                 color = itemView.findViewById(R.id.colorView)
             }
@@ -745,7 +713,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                 1 -> {
                     //load artist image in thumbnail view
                     val info: ArtistInfo? =
-                        OfflineStorageArtistBio.getArtistInfoFromCache(artistText!!.text
+                        OfflineStorageArtistBio.getArtistInfoFromCache(binding.textArtist.text
                             .toString())
                     Log.d("ImagesAdapter", "onBindViewHolder: $info")
                     when {
@@ -757,7 +725,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                         }
                         UtilityFun.isConnectedToInternet -> {
                             val artist: String =
-                                UtilityFun.filterArtistString(artistText!!.text.toString())
+                                UtilityFun.filterArtistString(binding.textArtist.text.toString())
                             DownloadArtInfoThread(object : ArtistInfo.Callback {
                                 override fun onArtInfoDownloaded(artistInfo: ArtistInfo?) {
                                     if (artistInfo != null && artistInfo.getImageUrl()!!
