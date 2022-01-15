@@ -28,6 +28,7 @@ class FragmentFolderLibrary : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private var mRecyclerView: RecyclerView? = null
     private var adapter: FolderLibraryAdapter? = null
     private val mReceiverForLibraryRefresh: BroadcastReceiver
+
     fun filter(s: String?) {
         if (adapter != null) {
             adapter!!.filter(s!!)

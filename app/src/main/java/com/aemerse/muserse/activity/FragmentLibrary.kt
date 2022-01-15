@@ -28,6 +28,7 @@ class FragmentLibrary : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private var cursoradapter: MainLibraryAdapter? = null
     private var mRecyclerView: RecyclerView? = null
     private var mRefreshLibraryReceiver: BroadcastReceiver? = null
+
     fun getStatus(): Int {
         return status
     }

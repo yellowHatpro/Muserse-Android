@@ -16,8 +16,6 @@ import android.view.ViewTreeObserver
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
@@ -33,27 +31,15 @@ import com.aemerse.muserse.model.MusicLibrary
 import com.aemerse.muserse.service.PlayerService
 import com.aemerse.muserse.utils.UtilityFun
 
-
 class FragmentAlbumArt : Fragment() {
     private var playerService: PlayerService? = null
     private var mUIUpdate: BroadcastReceiver? = null
 
-    @kotlin.jvm.JvmField
-    @BindView(R.id.album_art_now_playing)
-    var albumArt: ImageView? = null
+    private lateinit var albumArt: ImageView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val layout: View = inflater.inflate(R.layout.fragment_album_art, container, false)
-
-        /*Configuration configuration = getActivity().getResources().getConfiguration();
-        int screenWidthDp = configuration.screenWidthDp; //The current width of the available screen space, in dp units, corresponding to screen width resource qualifier.
-
-        Log.d("Fragment Disc", "onCreateView: " + screenWidthDp);
-
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(screenWidthDp -50, screenWidthDp -50);*/
-        ButterKnife.bind(
-            this,
-            layout)
+        albumArt = layout.findViewById(R.id.album_art_now_playing)
         playerService = ApplicationClass.getService()
         mUIUpdate = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -71,10 +57,9 @@ class FragmentAlbumArt : Fragment() {
             requireActivity().startPostponedEnterTransition()
 
             //place album art view properly in center
-            albumArt!!.viewTreeObserver.addOnGlobalLayoutListener(
-                object : ViewTreeObserver.OnGlobalLayoutListener {
+            albumArt.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                     override fun onGlobalLayout() {
-                        albumArt!!.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        albumArt.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                         //y position of control buttons
                         val yControl: Float = (activity as ActivityNowPlaying?)!!.yControl
@@ -84,7 +69,7 @@ class FragmentAlbumArt : Fragment() {
                             (activity as ActivityNowPlaying?)!!.toolbarHeight
                         if (toolbarHeight != 0f || yControl != 0f) {
                             //centre the album art
-                            albumArt!!.y = ((yControl - toolbarHeight) / 2) - albumArt!!.height / 2
+                            albumArt.y = ((yControl - toolbarHeight) / 2) - albumArt.height / 2
                         }
                     }
                 })
@@ -118,7 +103,7 @@ class FragmentAlbumArt : Fragment() {
         //if album art selected, hide small album art
         when (currentNowPlayingBackPref) {
             2 -> {
-                albumArt!!.setImageBitmap(null)
+                albumArt.setImageBitmap(null)
             }
             else -> {
                 val request: RequestBuilder<Drawable> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -154,7 +139,7 @@ class FragmentAlbumArt : Fragment() {
                             if (UtilityFun.isConnectedToInternet && !ApplicationClass.getPref().getBoolean(getString(R.string.pref_data_saver), false)) {
                                 val url: String? = MusicLibrary.instance.artistUrls[playerService!!.getCurrentTrack()!!.getArtist()]
                                 if (url != null && url.isNotEmpty()) request.load(Uri.parse(url))
-                                    .into(albumArt!!)
+                                    .into(albumArt)
                                 return true
                             }
                             return false
@@ -165,7 +150,7 @@ class FragmentAlbumArt : Fragment() {
                         }
                     }).placeholder(UtilityFun.defaultAlbumArtDrawable)
                 }
-                albumArt?.let { request.into(it) }
+                albumArt.let { request.into(it) }
             }
         }
     }
