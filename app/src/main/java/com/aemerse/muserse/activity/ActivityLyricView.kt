@@ -511,7 +511,7 @@ class ActivityLyricView : AppCompatActivity(), View.OnClickListener,
         binding.loadingLyricsAnimation.hide()
         mLyrics = lyrics
         when {
-            lyrics.getFlag() === Lyrics.POSITIVE_RESULT -> {
+            lyrics.getFlag() == Lyrics.POSITIVE_RESULT -> {
                 binding.textViewLyricStatus.visibility = View.GONE
                 binding.dynamicLyricsRecyclerView.visibility = View.VISIBLE
                 binding.textViewLyricStatus.visibility = View.GONE

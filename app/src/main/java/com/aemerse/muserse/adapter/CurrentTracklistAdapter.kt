@@ -94,7 +94,7 @@ class CurrentTracklistAdapter constructor(context: Context, dragStartListener: O
                 holder.cv.setBackgroundColor(ColorHelper.getColor(R.color.gray3))
                 holder.playAnimation.visibility = View.VISIBLE
                 when {
-                    playerService.getStatus() === playerService.PLAYING -> {
+                    playerService.getStatus() == playerService.PLAYING -> {
                         //holder.iv.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_pause_black_24dp));
                         holder.playAnimation.smoothToShow()
                     }

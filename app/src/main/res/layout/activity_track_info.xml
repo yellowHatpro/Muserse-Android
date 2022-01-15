@@ -80,7 +80,6 @@
                     android:textSize="18sp"
                     android:textColor="@color/primary_text_color"
                     android:layout_marginStart="20dp"
-                    android:layout_marginLeft="20dp"
                     android:text="Title : "/>
 
                 <TextView
@@ -90,7 +89,6 @@
                     android:textSize="18sp"
                     android:textColor="@color/primary_text_color"
                     android:layout_marginStart="20dp"
-                    android:layout_marginLeft="20dp"
                     android:text="Artist : "/>
 
                 <TextView

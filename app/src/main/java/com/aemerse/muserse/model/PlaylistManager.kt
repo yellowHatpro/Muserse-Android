@@ -593,7 +593,7 @@ class PlaylistManager private constructor(
         val tracklist: ArrayList<dataItem> = ArrayList()
         while (c.moveToNext()) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
-                if (d.id === c.getInt(0)) {
+                if (d.id == c.getInt(0)) {
                     tracklist.add(d)
                     break
                 }
@@ -619,7 +619,7 @@ class PlaylistManager private constructor(
             "" + Constants.SYSTEM_PLAYLISTS.RECENTLY_PLAYED_MAX)
         while (cursor.moveToNext()) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
-                if (d.id === cursor.getInt(0)) {
+                if (d.id == cursor.getInt(0)) {
                     tracklist.add(d)
                     break
                 }
@@ -660,7 +660,7 @@ class PlaylistManager private constructor(
         val lessThanCount = if (musicFiles.size > 50) 50 else musicFiles.size
         for (i in 0 until lessThanCount) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
-                if (d.id === pathToId[musicFiles[i].absolutePath]) {
+                if (d.id == pathToId[musicFiles[i].absolutePath]) {
                     tracklist.add(d)
                     break
                 }
@@ -687,7 +687,7 @@ class PlaylistManager private constructor(
         val tracklist: ArrayList<dataItem> = ArrayList()
         while (c.moveToNext()) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
-                if (d.id === c.getInt(0)) {
+                if (d.id == c.getInt(0)) {
                     tracklist.add(d)
                     break
                 }
@@ -716,7 +716,7 @@ class PlaylistManager private constructor(
             tracklist.add(cursor.getString(0));
         }*/while (cursor.moveToNext()) {
             for (d in MusicLibrary.instance.getDataItemsForTracks()!!.values) {
-                if (d.id === cursor.getInt(0)) {
+                if (d.id == cursor.getInt(0)) {
                     tracklist.add(d)
                     break
                 }

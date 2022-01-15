@@ -400,7 +400,7 @@ class MainLibraryAdapter(fl: FragmentLibrary?, private val context: Context, dat
         if (playerService == null) return
         when (fl!!.getStatus()) {
             Constants.FRAGMENT_STATUS.TITLE_FRAGMENT -> {
-                if (playerService.getStatus() === playerService.PLAYING) playerService.pause()
+                if (playerService.getStatus() == playerService.PLAYING) playerService.pause()
                 id_list.clear()
                 for (d: dataItem in filteredDataItems) {
                     id_list.add(d.id)

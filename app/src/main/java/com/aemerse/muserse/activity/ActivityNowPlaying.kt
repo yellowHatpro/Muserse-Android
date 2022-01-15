@@ -20,7 +20,6 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -31,9 +30,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.InputCallback
@@ -47,7 +43,7 @@ import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
 import com.aemerse.muserse.uiElementHelper.recyclerviewHelper.OnStartDragListener
 import com.aemerse.muserse.uiElementHelper.recyclerviewHelper.SimpleItemTouchHelperCallback
 import com.aemerse.muserse.adapter.CurrentTracklistAdapter
-import com.aemerse.muserse.customViews.CustomViewPager
+import com.aemerse.muserse.databinding.ActivityNowPlayingBinding
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.model.MusicLibrary
 import com.aemerse.muserse.model.PlaylistManager
@@ -61,7 +57,6 @@ import com.aemerse.muserse.transition.MorphMiniToNowPlaying
 import com.aemerse.muserse.transition.MorphNowPlayingToMini
 import com.aemerse.muserse.utils.AppLaunchCountManager
 import com.aemerse.muserse.utils.UtilityFun
-import com.sackcentury.shinebuttonlib.ShineButton
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import jp.wasabeef.blurry.Blurry
@@ -69,52 +64,12 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.util.concurrent.Executors
 
-
 class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDragListener {
     var screenWidth: Int = 0
     var screenHeight: Int = 0
     private var mLastClickTime: Long = 0
     private var stopProgressRunnable: Boolean = false
     private var updateTimeTaskRunning: Boolean = false
-
-    @JvmField @BindView(R.id.root_view_now_playing)
-    var rootView: View? = null
-
-    @JvmField @BindView(R.id.pw_ivShuffle)
-    var shuffle: ImageView? = null
-
-    @JvmField @BindView(R.id.pw_ivRepeat)
-    var repeat: ImageView? = null
-
-    @JvmField @BindView(R.id.text_in_repeat)
-    var textInsideRepeat: TextView? = null
-
-    @JvmField @BindView(R.id.seekbar_now_playing)
-    var seekBar: SeekBar? = null
-
-    @JvmField @BindView(R.id.pw_playButton)
-    var mPlayButton: ImageButton? = null
-
-    @JvmField @BindView(R.id.pw_runningTime)
-    var runningTime: TextView? = null
-
-    @JvmField @BindView(R.id.pw_totalTime)
-    var totalTime: TextView? = null
-
-    @JvmField @BindView(R.id.sliding_layout)
-    var slidingUpPanelLayout: SlidingUpPanelLayout? = null
-
-    @JvmField @BindView(R.id.view_pager_now_playing)
-    var viewPager: CustomViewPager? = null
-
-    @JvmField @BindView(R.id.shineButton)
-    var shineButton: ShineButton? = null
-
-    @JvmField @BindView(R.id.toolbar_)
-    var toolbar: Toolbar? = null
-
-    @JvmField @BindView(R.id.controls_wrapper)
-    var controlsWrapper: View? = null
 
     //@JvmField @BindView(R.id.nowPlayingBackgroundImageOverlay) View backgroundOverlay;
     private var pref: SharedPreferences? = null
@@ -142,11 +97,14 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
     //location of controls wrapper
     var yControl: Float = 0f
     var toolbarHeight: Float = 0f
+
+    private lateinit var binding: ActivityNowPlayingBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //if player service not running, kill the app
-        if (ApplicationClass.Companion.getService() == null) {
+        if (ApplicationClass.getService() == null) {
             UtilityFun.restartApp()
             finish()
             return
@@ -160,19 +118,20 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_now_playing)
+        binding = ActivityNowPlayingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         //backgroundOverlay.setBackgroundDrawable(ColorHelper.GetGradientDrawable());
-        slidingUpPanelLayout!!.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+        binding.slidingLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
-                    slidingUpPanelLayout!!.viewTreeObserver
+                    binding.slidingLayout.viewTreeObserver
                         .removeOnGlobalLayoutListener(this)
-                    yControl = controlsWrapper!!.y
-                    toolbarHeight = toolbar!!.height.toFloat()
+                    yControl = binding.controlsWrapper.y
+                    toolbarHeight = binding.toolbar.height.toFloat()
                     Log.d("ActivityNowPlaying", "onGlobalLayout: yControl $yControl")
                     Log.d("ActivityNowPlaying", "onGlobalLayout: toolbarHeight $toolbarHeight")
                     Log.d("ActivityNowPlaying",
-                        controlsWrapper!!.measuredHeight.toString() + "")
+                        binding.controlsWrapper.measuredHeight.toString() + "")
                 }
             })
         if (intent.action != null) {
@@ -184,10 +143,10 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         }
         pref = ApplicationClass.getPref()
         if (playerService != null && playerService!!.getCurrentTrack() != null) {
-            toolbar!!.title = playerService!!.getCurrentTrack()!!.title
-            toolbar!!.subtitle = playerService!!.getCurrentTrack()!!.getArtist()
+            binding.toolbar.title = playerService!!.getCurrentTrack()!!.title
+            binding.toolbar.subtitle = playerService!!.getCurrentTrack()!!.getArtist()
         }
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         initializeCurrentTracklistAdapter()
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
@@ -209,11 +168,11 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 override fun onGlobalLayout() {
                     playQueueHandle.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     //height is ready
-                    slidingUpPanelLayout!!.panelHeight = playQueueHandle.height
-                    slidingUpPanelLayout!!.setScrollableView(mRecyclerView)
+                    binding.slidingLayout.panelHeight = playQueueHandle.height
+                    binding.slidingLayout.setScrollableView(mRecyclerView)
                 }
             })
-        slidingUpPanelLayout!!.addPanelSlideListener(object :
+        binding.slidingLayout.addPanelSlideListener(object :
             SlidingUpPanelLayout.PanelSlideListener {
             override fun onPanelSlide(panel: View, slideOffset: Float) {
                 if (slideOffset > 0.99) {
@@ -238,8 +197,8 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 }
             }
         })
-        slidingUpPanelLayout!!.setDragView(R.id.play_queue_title)
-        shineButton!!.init(this)
+        binding.slidingLayout.setDragView(R.id.play_queue_title)
+        binding.shineButton.init(this)
         val saveQueueButton: View = findViewById(R.id.save_queue_button)
         saveQueueButton.setOnClickListener(this)
         Log.v(Constants.TAG,
@@ -250,7 +209,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 updateUI(intent)
             }
         }
-        viewPager!!.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        binding.viewPagerNowPlaying.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(
                 position: Int,
                 positionOffset: Float,
@@ -268,7 +227,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 }
 
                 //2 lyrics fragment
-                if (position == 2 && playerService!!.getStatus() === playerService!!.PLAYING) {
+                if (position == 2 && playerService!!.getStatus() == playerService!!.PLAYING) {
                     acquireWindowPowerLock(true)
                 } else {
                     acquireWindowPowerLock(false)
@@ -277,10 +236,10 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
 
             override fun onPageScrollStateChanged(state: Int) {}
         })
-        viewPager!!.offscreenPageLimit = 2
-        setupViewPager(viewPager!!)
+        binding.viewPagerNowPlaying.offscreenPageLimit = 2
+        setupViewPager(binding.viewPagerNowPlaying)
         //set current item to disc
-        viewPager!!.setCurrentItem(Constants.EXIT_NOW_PLAYING_AT.DISC_FRAG, true)
+        binding.viewPagerNowPlaying.setCurrentItem(Constants.EXIT_NOW_PLAYING_AT.DISC_FRAG, true)
 
         //display current play queue header
         if (playerService != null) {
@@ -293,8 +252,24 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         ) {
             showInfoDialog()
         }
-        InitializeControlsUI()
+        initializeControlsUI()
         setupSharedElementTransitions()
+
+        binding.pwIvShuffle.setOnClickListener {
+            shuffle()
+        }
+        binding.pwIvRepeat.setOnClickListener {
+            repeat()
+        }
+        binding.pwIvSkipNext.setOnClickListener {
+            skipNext()
+        }
+        binding.pwIvSkipPrevious.setOnClickListener {
+            skippPrev()
+        }
+        binding.pwPlayButton.setOnClickListener {
+            play()
+        }
     }
 
     private fun setupSharedElementTransitions() {
@@ -443,12 +418,15 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 val intent: Intent = Intent().setAction(Constants.ACTION.UPDATE_LYRIC_AND_INFO)
                 LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                 Log.v(Constants.TAG, "Intent sent! " + intent.action)
-                if (playerService!!.getStatus() === playerService!!.PLAYING) {
-                    mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
-                } else {
-                    mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
+                when (playerService!!.PLAYING) {
+                    playerService!!.getStatus() -> {
+                        binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
+                    }
+                    else -> {
+                        binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
+                    }
                 }
-                totalTime!!.text = UtilityFun.msToString(playerService!!.getCurrentTrackDuration().toLong())
+                binding.pwTotalTime.text = UtilityFun.msToString(playerService!!.getCurrentTrackDuration().toLong())
 
                 //update disc
                 updateDisc()
@@ -508,8 +486,8 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     b = BitmapFactory.decodeResource(getResources(),R.drawable.now_playing_back);
                     setBlurryBackground(b);
                 }*/
-                toolbar!!.title = playerService!!.getCurrentTrack()!!.title
-                toolbar!!.subtitle = playerService!!.getCurrentTrack()!!.getArtist()
+                binding.toolbar.title = playerService!!.getCurrentTrack()!!.title
+                binding.toolbar.subtitle = playerService!!.getCurrentTrack()!!.getArtist()
             }
         } else {
             UtilityFun.restartApp()
@@ -620,8 +598,8 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
 
     override fun onBackPressed() {
         //
-        if (slidingUpPanelLayout!!.panelState == SlidingUpPanelLayout.PanelState.EXPANDED) {
-            slidingUpPanelLayout!!.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
+        if (binding.slidingLayout.panelState == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            binding.slidingLayout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
             return
         }
         if (isInvokedFromFileExplorer) {
@@ -664,18 +642,21 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         when (item.itemId) {
             R.id.action_fav -> {
                 if (playerService!!.getCurrentTrack() == null) {
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewNowPlaying,
                         getString(R.string.error_nothing_to_fav),
                         Snackbar.LENGTH_SHORT).show()
                     return true
                 }
-                if (PlaylistManager.getInstance(applicationContext)!!.isFavNew(playerService!!.getCurrentTrack()!!.id)) {
-                    PlaylistManager.getInstance(applicationContext)!!.removeFromFavNew(playerService!!.getCurrentTrack()!!.id)
-                } else {
-                    PlaylistManager.getInstance(applicationContext)!!.addSongToFav(playerService!!.getCurrentTrack()!!.id)
-                    shineButton!!.visibility = View.VISIBLE
-                    shineButton!!.showAnim()
-                    shineButton!!.clearAnimation()
+                when {
+                    PlaylistManager.getInstance(applicationContext)!!.isFavNew(playerService!!.getCurrentTrack()!!.id) -> {
+                        PlaylistManager.getInstance(applicationContext)!!.removeFromFavNew(playerService!!.getCurrentTrack()!!.id)
+                    }
+                    else -> {
+                        PlaylistManager.getInstance(applicationContext)!!.addSongToFav(playerService!!.getCurrentTrack()!!.id)
+                        binding.shineButton.visibility = View.VISIBLE
+                        binding.shineButton.showAnim()
+                        binding.shineButton.clearAnimation()
+                    }
                 }
                 invalidateOptionsMenu()
             }
@@ -694,7 +675,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     if (playerService!!.getEqualizerHelper().isEqualizerSupported()) {
                         startActivity(Intent(this, ActivityEqualizer::class.java))
                     } else {
-                        Snackbar.make(rootView!!,
+                        Snackbar.make(binding.rootViewNowPlaying,
                             R.string.error_equ_not_supported,
                             Snackbar.LENGTH_SHORT).show()
                     }
@@ -729,7 +710,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     startActivity(artIntent)
                 }
                 else -> {
-                    Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootViewNowPlaying, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -742,7 +723,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     startActivity(albIntent)
                 }
                 else -> {
-                    Snackbar.make(rootView!!, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootViewNowPlaying, getString(R.string.no_music_found), Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -757,7 +738,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                         UtilityFun.share(this, fileUris, trackItem.title)
                     }
                     else -> {
-                        Snackbar.make(rootView!!, R.string.error_nothing_to_share, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(binding.rootViewNowPlaying, R.string.error_nothing_to_share, Snackbar.LENGTH_SHORT)
                             .show()
                     }
                 }
@@ -765,7 +746,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 try {
                     UtilityFun.shareFromPath(this, trackItem!!.getFilePath())
                 } catch (ex: Exception) {
-                    Snackbar.make(rootView!!, R.string.error_unable_to_share, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootViewNowPlaying, R.string.error_unable_to_share, Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -773,7 +754,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 if (trackItem != null) {
                     AddToPlaylist()
                 } else {
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewNowPlaying,
                         getString(R.string.no_music_found),
                         Snackbar.LENGTH_SHORT).show()
                 }
@@ -787,7 +768,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                         .putExtra("position", playerService!!.getCurrentTrackPosition())
                         .putExtra("id", trackItem.id))
                 } else {
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewNowPlaying,
                         getString(R.string.no_music_found),
                         Snackbar.LENGTH_SHORT).show()
                 }
@@ -798,24 +779,24 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     (viewPagerAdapter!!.getItem(2) as FragmentLyrics).clearLyrics()
                 } else {
                     //Toast.makeText(this, "Unable to delete lyrics!", Toast.LENGTH_SHORT).show();
-                    Snackbar.make(rootView!!,
+                    Snackbar.make(binding.rootViewNowPlaying,
                         getString(R.string.error_no_lyrics),
                         Snackbar.LENGTH_SHORT).show()
                 }
             } else {
-                Snackbar.make(rootView!!, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
+                Snackbar.make(binding.rootViewNowPlaying, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
                     .show()
             }
             R.id.action_share_lyrics_offline -> if (trackItem != null) {
                 (viewPagerAdapter!!.getItem(2) as FragmentLyrics).shareLyrics()
             } else {
-                Snackbar.make(rootView!!, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
+                Snackbar.make(binding.rootViewNowPlaying, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
                     .show()
             }
             R.id.action_wrong_lyrics -> if (trackItem != null) {
                 (viewPagerAdapter!!.getItem(2) as FragmentLyrics).wrongLyrics()
             } else {
-                Snackbar.make(rootView!!, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
+                Snackbar.make(binding.rootViewNowPlaying, getString(R.string.error_no_lyrics), Snackbar.LENGTH_SHORT)
                     .show()
             }
             R.id.action_add_lyrics -> if (trackItem != null) {
@@ -830,7 +811,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     abPath,
                     MusicLibrary.instance.getIdFromFilePath(abPath))
             } else {
-                Snackbar.make(rootView!!,
+                Snackbar.make(binding.rootViewNowPlaying,
                     getString(R.string.main_act_empty_lib),
                     Snackbar.LENGTH_SHORT).show()
             }
@@ -860,7 +841,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 OfflineStorageLyrics.clearLyricsFromDB(item)
                 OfflineStorageLyrics.putLyricsInDB(result, item)
                 (viewPagerAdapter!!.getItem(2) as FragmentLyrics).onLyricsDownloaded(result)
-                Snackbar.make(rootView!!, "Lyrics added", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.rootViewNowPlaying, "Lyrics added", Snackbar.LENGTH_SHORT).show()
             }
             .negativeButton(R.string.cancel)
 
@@ -892,7 +873,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         }
         when (view.id) {
             R.id.save_queue_button -> {
-                if (mAdapter!!.itemCount === 0) {
+                if (mAdapter!!.itemCount == 0) {
                     return
                 }
                 val input = EditText(this)
@@ -917,11 +898,11 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                                         PlaylistManager.getInstance(ApplicationClass.getContext())?.addSongToPlaylist(playlist_name, ids)
                                     }
                                     // Toast.makeText(ActivityNowPlaying.this, "Playlist saved!", Toast.LENGTH_SHORT).show();
-                                    Snackbar.make(rootView!!, getString(R.string.playlist_saved), Snackbar.LENGTH_SHORT).show()
+                                    Snackbar.make(binding.rootViewNowPlaying, getString(R.string.playlist_saved), Snackbar.LENGTH_SHORT).show()
                                 }
                                 else -> {
                                     //Toast.makeText(ActivityNowPlaying.this, "Playlist already exists", Toast.LENGTH_SHORT).show();
-                                    Snackbar.make(rootView!!, getString(R.string.play_list_already_exists), Snackbar.LENGTH_SHORT).show()
+                                    Snackbar.make(binding.rootViewNowPlaying, getString(R.string.play_list_already_exists), Snackbar.LENGTH_SHORT).show()
                                 }
                             }
                         }
@@ -973,10 +954,13 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         LocalBroadcastManager.getInstance(applicationContext)
             .sendBroadcast(Intent(Constants.ACTION.DISC_UPDATE))
         (viewPagerAdapter!!.getItem(2) as FragmentLyrics).runLyricThread()
-        if (viewPager!!.currentItem == 2 && playerService!!.getStatus() === playerService!!.PLAYING) {
-            acquireWindowPowerLock(true)
-        } else {
-            acquireWindowPowerLock(false)
+        when {
+            binding.viewPagerNowPlaying.currentItem == 2 && playerService!!.getStatus() == playerService!!.PLAYING -> {
+                acquireWindowPowerLock(true)
+            }
+            else -> {
+                acquireWindowPowerLock(false)
+            }
         }
     }
 
@@ -1003,7 +987,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 ApplicationClass.getPref().edit().putInt(context.getString(R.string.pref_sleep_timer), 0).apply()
                 playerService!!.setSleepTimer(0, false)
                 // Toast.makeText(context, "Sleep timer discarded", Toast.LENGTH_LONG).show();
-                Snackbar.make(rootView!!,
+                Snackbar.make(binding.rootViewNowPlaying,
                     getString(R.string.sleep_timer_discarded),
                     Snackbar.LENGTH_SHORT).show()
             }
@@ -1035,7 +1019,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     playerService!!.setSleepTimer(seek.progress, true)
                     playerService!!.setSleepTimer(seek.progress, true)
                     val temp = (getString(R.string.sleep_timer_successfully_set) + seek.progress + getString(R.string.main_act_sleep_timer_status_minutes))
-                    Snackbar.make(rootView!!, temp, Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.rootViewNowPlaying, temp, Snackbar.LENGTH_SHORT).show()
                 }
             }
             .negativeButton(R.string.cancel)
@@ -1053,7 +1037,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     playlist_name.length > 2 -> {
                         //if playlist starts with digit, not allowed
                         if (Character.isDigit(playlist_name[0])) {
-                            Snackbar.make(rootView!!,
+                            Snackbar.make(binding.rootViewNowPlaying,
                                 getString(R.string.playlist_error_1),
                                 Snackbar.LENGTH_SHORT).show()
                             return false
@@ -1062,7 +1046,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                     }
                     else -> {
                         //Toast.makeText(this,"Enter at least 3 characters",Toast.LENGTH_SHORT).show();
-                        Snackbar.make(rootView!!, getString(R.string.playlist_error_2), Snackbar.LENGTH_SHORT)
+                        Snackbar.make(binding.rootViewNowPlaying, getString(R.string.playlist_error_2), Snackbar.LENGTH_SHORT)
                             .show()
                         return false
                     }
@@ -1070,7 +1054,7 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             }
             else -> {
                 //Toast.makeText(this,"Only alphanumeric characters allowed",Toast.LENGTH_SHORT).show();
-                Snackbar.make(rootView!!, getString(R.string.playlist_error_3), Snackbar.LENGTH_SHORT)
+                Snackbar.make(binding.rootViewNowPlaying, getString(R.string.playlist_error_3), Snackbar.LENGTH_SHORT)
                     .show()
                 return false
             }
@@ -1115,44 +1099,48 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
     }
 
-    private fun InitializeControlsUI() {
-        if (!pref!!.getBoolean(Constants.PREFERENCES.SHUFFLE, false)) {
-            shuffle!!.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
-        } else {
-            shuffle!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+    private fun initializeControlsUI() {
+        when {
+            !pref!!.getBoolean(Constants.PREFERENCES.SHUFFLE, false) -> {
+                binding.pwIvShuffle.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
+            }
+            else -> {
+                binding.pwIvShuffle.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+            }
         }
         when {
             pref!!.getInt(Constants.PREFERENCES.REPEAT,
                 0) == Constants.PREFERENCE_VALUES.REPEAT_ALL -> {
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.colorwhite))
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
-                textInsideRepeat!!.text = "A"
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.colorwhite))
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+                binding.textInRepeat.text = "A"
             }
             pref!!.getInt(Constants.PREFERENCES.REPEAT,
                 0) == Constants.PREFERENCE_VALUES.REPEAT_ONE -> {
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.colorwhite))
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
-                textInsideRepeat!!.text = "1"
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.colorwhite))
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+                binding.textInRepeat.text = "1"
             }
             pref!!.getInt(Constants.PREFERENCES.REPEAT,
                 0) == Constants.PREFERENCE_VALUES.NO_REPEAT -> {
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.dark_gray3))
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
-                textInsideRepeat!!.text = ""
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.dark_gray3))
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
+                binding.textInRepeat.text = ""
             }
         }
-        if (playerService!!.getStatus() === playerService!!.PLAYING) {
-            mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
-        } else {
-            mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
+        when (playerService!!.PLAYING) {
+            playerService!!.getStatus() -> {
+                binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
+            }
+            else -> {
+                binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
+            }
         }
-
-        //mPlayButton.setBackgroundTintList(ColorStateList.valueOf(ColorHelper.GetWidgetColor()));
-        seekBar!!.max = 100
-        seekBar!!.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        binding.seekbarNowPlaying.max = 100
+        binding.seekbarNowPlaying.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 if (b) {
-                    runningTime!!.text = UtilityFun.msToString(
+                    binding.pwRunningTime.text = UtilityFun.msToString(
                         UtilityFun.progressToTimer(seekBar.progress,
                             playerService!!.getCurrentTrackDuration()).toLong())
                     if (selectedPageIndex == 2) {
@@ -1174,7 +1162,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
         })
     }
 
-    @OnClick(R.id.pw_ivShuffle)
     fun shuffle() {
         if (playerService!!.getCurrentTrack() == null) {
             Toast.makeText(this, getString(R.string.nothing_to_play), Toast.LENGTH_LONG).show()
@@ -1185,47 +1172,45 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             //shuffle is on, turn it off
             pref!!.edit().putBoolean(Constants.PREFERENCES.SHUFFLE, false).apply()
             playerService!!.shuffle(false)
-            shuffle!!.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
+            binding.pwIvShuffle.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
         } else {
             //shuffle is off, turn it on
             pref!!.edit().putBoolean(Constants.PREFERENCES.SHUFFLE, true).apply()
             playerService!!.shuffle(true)
-            shuffle!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+            binding.pwIvShuffle.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
         }
         updateCurrentTracklistAdapter()
     }
 
-    @OnClick(R.id.pw_ivRepeat)
     fun repeat() {
         when {
             pref!!.getInt(Constants.PREFERENCES.REPEAT, 0) == Constants.PREFERENCE_VALUES.NO_REPEAT -> {
                 pref!!.edit().putInt(Constants.PREFERENCES.REPEAT, Constants.PREFERENCE_VALUES.REPEAT_ALL)
                     .apply()
-                //repeat!!.setColorFilter(UtilityFun.GetDominatColor(playerService!!.getAlbumArt()));
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.colorwhite))
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
-                textInsideRepeat!!.text = "A"
+                //binding.pwIvRepeat.setColorFilter(UtilityFun.GetDominatColor(playerService!!.getAlbumArt()));
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.colorwhite))
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+                binding.textInRepeat.text = "A"
             }
             pref!!.getInt(Constants.PREFERENCES.REPEAT,
                 0) == Constants.PREFERENCE_VALUES.REPEAT_ALL -> {
                 pref!!.edit().putInt(Constants.PREFERENCES.REPEAT, Constants.PREFERENCE_VALUES.REPEAT_ONE)
                     .apply()
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.colorwhite))
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
-                textInsideRepeat!!.text = "1"
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.colorwhite))
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.colorwhite))
+                binding.textInRepeat.text = "1"
             }
             pref!!.getInt(Constants.PREFERENCES.REPEAT,
                 0) == Constants.PREFERENCE_VALUES.REPEAT_ONE -> {
                 pref!!.edit().putInt(Constants.PREFERENCES.REPEAT, Constants.PREFERENCE_VALUES.NO_REPEAT)
                     .apply()
-                repeat!!.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
-                textInsideRepeat!!.setTextColor(ColorHelper.getColor(R.color.dark_gray3))
-                textInsideRepeat!!.text = ""
+                binding.pwIvRepeat.setColorFilter(ColorHelper.getColor(R.color.dark_gray3))
+                binding.textInRepeat.setTextColor(ColorHelper.getColor(R.color.dark_gray3))
+                binding.textInRepeat.text = ""
             }
         }
     }
 
-    @OnClick(R.id.pw_ivSkipNext)
     fun skipNext() {
         if (playerService!!.getCurrentTrack() == null) {
             Toast.makeText(this, getString(R.string.nothing_to_play), Toast.LENGTH_LONG).show()
@@ -1241,7 +1226,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             .sendBroadcast(Intent(Constants.ACTION.PLAY_PAUSE_UI_UPDATE))
     }
 
-    @OnClick(R.id.pw_ivSkipPrevious)
     fun skippPrev() {
         if (playerService!!.getCurrentTrack() == null) {
             Toast.makeText(this, getString(R.string.nothing_to_play), Toast.LENGTH_LONG).show()
@@ -1257,7 +1241,6 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             .sendBroadcast(Intent(Constants.ACTION.PLAY_PAUSE_UI_UPDATE))
     }
 
-    @OnClick(R.id.pw_playButton)
     fun play() {
         //avoid debouncing of key if multiple play clicks are given by user
         if (SystemClock.elapsedRealtime() - mLastClickTime < 100) {
@@ -1275,23 +1258,26 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
             return
         }
         playerService!!.play()
-        if (playerService!!.getStatus() === playerService!!.PLAYING) {
-            mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
-            startUpdateTask()
-        } else {
-            mPlayButton!!.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
-            stopUpdateTask()
+        when (playerService!!.PLAYING) {
+            playerService!!.getStatus() -> {
+                binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_pause))
+                startUpdateTask()
+            }
+            else -> {
+                binding.pwPlayButton.setImageDrawable(resources.getDrawable(R.drawable.pw_play))
+                stopUpdateTask()
+            }
         }
     }
 
     private fun setSeekbarAndTime() {
-        seekBar!!.progress = UtilityFun.getProgressPercentage(playerService!!.getCurrentTrackProgress(),
+        binding.seekbarNowPlaying.progress = UtilityFun.getProgressPercentage(playerService!!.getCurrentTrackProgress(),
             playerService!!.getCurrentTrackDuration())
-        runningTime!!.text = UtilityFun.msToString(playerService!!.getCurrentTrackProgress().toLong())
+        binding.pwRunningTime.text = UtilityFun.msToString(playerService!!.getCurrentTrackProgress().toLong())
     }
 
     private fun startUpdateTask() {
-        if (!updateTimeTaskRunning && playerService!!.getStatus() === playerService!!.PLAYING) {
+        if (!updateTimeTaskRunning && playerService!!.getStatus() == playerService!!.PLAYING) {
             stopProgressRunnable = false
             Executors.newSingleThreadExecutor().execute(mUpdateTimeTask)
         }
@@ -1318,8 +1304,8 @@ class ActivityNowPlaying : AppCompatActivity(), View.OnClickListener, OnStartDra
                 val per: Int =
                     UtilityFun.getProgressPercentage(playerService!!.getCurrentTrackProgress() / 1000,
                         playerService!!.getCurrentTrackDuration() / 1000)
-                runningTime!!.text = UtilityFun.msToString(curDur.toLong())
-                seekBar!!.progress = per
+                binding.pwRunningTime.text = UtilityFun.msToString(curDur.toLong())
+                binding.seekbarNowPlaying.progress = per
             }
             try {
                 Thread.sleep(100)

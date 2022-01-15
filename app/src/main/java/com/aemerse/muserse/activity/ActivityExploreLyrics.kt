@@ -14,7 +14,6 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,49 +21,26 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.customview.getCustomView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.aemerse.muserse.ApplicationClass
 import com.aemerse.muserse.R
 import com.aemerse.muserse.adapter.TopTracksAdapter
-import com.aemerse.muserse.databinding.ActivityTrackInfoBinding
+import com.aemerse.muserse.databinding.ActivityLyricsExploreBinding
 import com.aemerse.muserse.lyricsExplore.OnPopularTracksReady
 import com.aemerse.muserse.lyricsExplore.PopularTrackRepo
 import com.aemerse.muserse.lyricsExplore.Track
 import com.aemerse.muserse.model.Constants
 import com.aemerse.muserse.uiElementHelper.ColorHelper
 import com.aemerse.muserse.utils.UtilityFun
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.customview.customView
+import com.afollestad.materialdialogs.customview.getCustomView
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 
 class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
-    @JvmField @BindView(R.id.root_view_lyrics_explore)
-    var rootView: View? = null
 
-    @JvmField @BindView(R.id.recyclerView)
-    var recyclerView: RecyclerView? = null
-
-    @JvmField @BindView(R.id.recycler_view_wrapper)
-    var rvWrapper: View? = null
-
-    @JvmField @BindView(R.id.progressBar)
-    var progressBar: ProgressBar? = null
-
-    @JvmField @BindView(R.id.statusTextView)
-    var statusText: TextView? = null
-
-    @JvmField @BindView(R.id.swipeRefreshLayout)
-    var swipeRefreshLayout: SwipeRefreshLayout? = null
-
-    @JvmField @BindView(R.id.fab_right_side)
-    var fab: FloatingActionButton? = null
-
-    @JvmField @BindView(R.id.trending_now_text)
-    var trendingNow: TextView? = null
     private var handler: Handler? = null
 
-    private lateinit var binding: ActivityTrackInfoBinding
+    private lateinit var binding: ActivityLyricsExploreBinding
 
     private lateinit var artist: EditText
     private lateinit var trackTitle: EditText
@@ -78,7 +54,7 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityTrackInfoBinding.inflate(layoutInflater)
+        binding = ActivityLyricsExploreBinding.inflate(layoutInflater)
 
         ColorHelper.setStatusBarGradiant(this)
         when (ApplicationClass.getPref().getInt(getString(R.string.pref_theme), Constants.PRIMARY_COLOR.LIGHT)) {
@@ -86,8 +62,7 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_lyrics_explore)
-        ButterKnife.bind(this)
+        setContentView(binding.root)
         growShrinkAnimate()
         handler = Handler(Looper.getMainLooper())
         val toolbar: Toolbar = findViewById(R.id.toolbar_)
@@ -103,15 +78,19 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
         }
 
         //rootView.setBackgroundDrawable(ColorHelper.GetGradientDrawableDark());
-        swipeRefreshLayout!!.setOnRefreshListener(this)
+        binding.swipeRefreshLayout.setOnRefreshListener(this)
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(ColorHelper.GetStatusBarColor());
         }*/
-        fab!!.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
-        fab!!.setOnClickListener(this)
+        binding.fabRightSide.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
+        binding.fabRightSide.setOnClickListener(this)
+
+        binding.statusTextView.setOnClickListener {
+            retryLoading()
+        }
     }
 
     private fun growShrinkAnimate() {
@@ -133,13 +112,13 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
             0.5f)
         growAnim.duration = 500
         shrinkAnim.duration = 500
-        fab!!.animation = growAnim
+        binding.fabRightSide.animation = growAnim
         growAnim.start()
         growAnim.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {}
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationEnd(animation: Animation) {
-                fab!!.animation = shrinkAnim
+                binding.fabRightSide.animation = shrinkAnim
                 shrinkAnim.start()
             }
         })
@@ -147,7 +126,7 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
             override fun onAnimationStart(animation: Animation) {}
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationEnd(animation: Animation) {
-                fab!!.animation = growAnim
+                binding.fabRightSide.animation = growAnim
                 growAnim.start()
             }
         })
@@ -159,10 +138,9 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
         PopularTrackRepo().fetchPopularTracks(country, this, lookInCache)
     }
 
-    @OnClick(R.id.statusTextView)
     fun retryLoading() {
-        progressBar!!.visibility = View.VISIBLE
-        statusText!!.visibility = View.GONE
+        binding.progressBar.visibility = View.VISIBLE
+        binding.statusTextView.visibility = View.GONE
         handler!!.postDelayed({ loadPopularTracks(false) }, 1000)
     }
 
@@ -174,26 +152,29 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
 
     override fun popularTracksReady(tracks: List<Track>?, region: String) {
         handler!!.post {
-            swipeRefreshLayout!!.isRefreshing = false
-            progressBar!!.visibility = View.GONE
-            if (tracks!!.isEmpty()) {
-                statusText!!.setText(R.string.error_fetching_popular_tracks)
-                statusText!!.visibility = View.VISIBLE
-            } else {
-                val adapter = TopTracksAdapter(this@ActivityExploreLyrics, tracks)
-                recyclerView!!.adapter = adapter
-                recyclerView!!.layoutManager = WrapContentLinearLayoutManager(this@ActivityExploreLyrics)
-                rvWrapper!!.visibility = View.VISIBLE
-                trendingNow!!.text = getString(R.string.trending_now_in, region)
+            binding.swipeRefreshLayout.isRefreshing = false
+            binding.progressBar.visibility = View.GONE
+            when {
+                tracks!!.isEmpty() -> {
+                    binding.statusTextView.setText(R.string.error_fetching_popular_tracks)
+                    binding.statusTextView.visibility = View.VISIBLE
+                }
+                else -> {
+                    val adapter = TopTracksAdapter(this@ActivityExploreLyrics, tracks)
+                    binding.recyclerView.adapter = adapter
+                    binding.recyclerView.layoutManager = WrapContentLinearLayoutManager(this@ActivityExploreLyrics)
+                    binding.recyclerViewWrapper.visibility = View.VISIBLE
+                    binding.trendingNowText.text = getString(R.string.trending_now_in, region)
+                }
             }
         }
     }
 
     override fun error() {
         handler!!.post {
-            progressBar!!.visibility = View.GONE
-            statusText!!.setText(R.string.error_fetching_popular_tracks)
-            statusText!!.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.GONE
+            binding.statusTextView.setText(R.string.error_fetching_popular_tracks)
+            binding.statusTextView.visibility = View.VISIBLE
         }
     }
 
@@ -250,7 +231,7 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
                 if ((artistName == "")) {
                     artistName = getString(R.string.unknown_artist)
                 }
-                progressBar!!.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
                 val finalArtistName: String = artistName
                 handler!!.postDelayed({
                     val intent: Intent =
@@ -265,15 +246,16 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
         val layout: View = builder.getCustomView()
         trackTitle = layout.findViewById(R.id.track_title_edit)
         artist = layout.findViewById(R.id.artist_edit)
-        progressBar = layout.findViewById(R.id.progressBar)
+        val trackTitle = layout.findViewById<TextView>(R.id.trackTitle)
+
         handler!!.postDelayed({
-            binding.trackTitle.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
+            trackTitle.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
                 SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_DOWN,
                 0f,
                 0f,
                 0))
-            binding.trackTitle.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
+            trackTitle.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
                 SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_UP,
                 0f,
@@ -286,12 +268,12 @@ class ActivityExploreLyrics : AppCompatActivity(), OnPopularTracksReady, View.On
     override fun onRefresh() {
         if (!UtilityFun.isConnectedToInternet) {
             Toast.makeText(this, "No Connection!", Toast.LENGTH_SHORT).show()
-            swipeRefreshLayout!!.isRefreshing = false
+            binding.swipeRefreshLayout.isRefreshing = false
             return
         }
-        rvWrapper!!.visibility = View.GONE
-        progressBar!!.visibility = View.VISIBLE
-        statusText!!.visibility = View.GONE
+        binding.recyclerViewWrapper.visibility = View.GONE
+        binding.progressBar.visibility = View.VISIBLE
+        binding.statusTextView.visibility = View.GONE
         loadPopularTracks(false)
     }
 

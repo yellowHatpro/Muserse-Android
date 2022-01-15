@@ -207,7 +207,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
                     mSeekBar!!.visibility = View.VISIBLE
                 }
                 if (mProgressBar != null) {
-                    mProgressBar!!.visibility = View.INVISIBLE
+                    mbinding.progressBar.visibility = View.INVISIBLE
                     requestedOrientation = mLastOrientationWhileBuffering
                 }
                 if (mPlayPauseBtn != null) {
@@ -369,7 +369,7 @@ class AudioPreviewActivity : Activity(), MediaPlayer.OnCompletionListener,
 
     private fun handleHttpScheme() {
         if (mProgressBar != null) {
-            mProgressBar!!.visibility = View.VISIBLE
+            mbinding.progressBar.visibility = View.VISIBLE
             mLastOrientationWhileBuffering = requestedOrientation
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         }

@@ -21,6 +21,21 @@ import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aemerse.muserse.ApplicationClass
+import com.aemerse.muserse.R
+import com.aemerse.muserse.adapter.AlbumLibraryAdapter
+import com.aemerse.muserse.adapter.SecondaryLibraryAdapter
+import com.aemerse.muserse.customViews.ExpandableTextView
+import com.aemerse.muserse.databinding.ActivitySecondaryLibraryBinding
+import com.aemerse.muserse.model.*
+import com.aemerse.muserse.qlyrics.ArtistInfo.ArtistInfo
+import com.aemerse.muserse.qlyrics.offlineStorage.OfflineStorageArtistBio
+import com.aemerse.muserse.qlyrics.tasks.DownloadArtInfoThread
+import com.aemerse.muserse.service.PlayerService
+import com.aemerse.muserse.uiElementHelper.BottomOffsetDecoration
+import com.aemerse.muserse.uiElementHelper.ColorHelper
+import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
+import com.aemerse.muserse.utils.UtilityFun
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.bumptech.glide.Glide
@@ -28,23 +43,7 @@ import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.aemerse.muserse.ApplicationClass
-import com.aemerse.muserse.R
-import com.aemerse.muserse.uiElementHelper.BottomOffsetDecoration
-import com.aemerse.muserse.uiElementHelper.ColorHelper
-import com.aemerse.muserse.uiElementHelper.TypeFaceHelper
-import com.aemerse.muserse.adapter.AlbumLibraryAdapter
-import com.aemerse.muserse.adapter.SecondaryLibraryAdapter
-import com.aemerse.muserse.customViews.ExpandableTextView
-import com.aemerse.muserse.model.*
-import com.aemerse.muserse.qlyrics.ArtistInfo.ArtistInfo
-import com.aemerse.muserse.qlyrics.offlineStorage.OfflineStorageArtistBio
-import com.aemerse.muserse.qlyrics.tasks.DownloadArtInfoThread
-import com.aemerse.muserse.service.PlayerService
-import com.aemerse.muserse.utils.UtilityFun
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import java.util.*
 import java.util.concurrent.Executors
@@ -52,53 +51,10 @@ import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, ArtistInfo.Callback {
-    @JvmField @BindView(R.id.secondaryLibraryList)
-    var mRecyclerView: RecyclerView? = null
 
-    @JvmField @BindView(R.id.albumsInArtistFrag)
-    var mAlbumsRecyclerView: RecyclerView? = null
-
-    @JvmField @BindView(R.id.artistBio)
-    var artistBio: ExpandableTextView? = null
     private var adapter: SecondaryLibraryAdapter? = null
     private var mReceiverForMiniPLayerUpdate: BroadcastReceiver? = null
     private var mReceiverForDataReady: BroadcastReceiver? = null
-
-    @JvmField @BindView(R.id.song_name_mini_player)
-    var songNameMiniPlayer: TextView? = null
-
-    @JvmField @BindView(R.id.artist_mini_player)
-    var artistNameMiniPlayer: TextView? = null
-
-    @JvmField @BindView(R.id.play_pause_mini_player)
-    var buttonPlay: ImageView? = null
-
-    @JvmField @BindView(R.id.album_art_mini_player)
-    var albumArtIv: ImageView? = null
-
-    @JvmField @BindView(R.id.mini_player)
-    var miniPlayer: LinearLayout? = null
-
-    @JvmField @BindView(R.id.next_mini_plaayrer)
-    var buttonNext: ImageView? = null
-
-    @JvmField @BindView(R.id.main_backdrop)
-    var mainBackdrop: ImageView? = null
-
-    @JvmField @BindView(R.id.fab_right_side)
-    var fab: FloatingActionButton? = null
-
-    @JvmField @BindView(R.id.border_view)
-    var border: View? = null
-
-    @JvmField @BindView(R.id.progressBar)
-    var progressBar: View? = null
-
-    @JvmField @BindView(R.id.main_collapsing)
-    var collapsingToolbarLayout: CollapsingToolbarLayout? = null
-
-    @JvmField @BindView(R.id.root_view_secondary_lib)
-    var rootView: View? = null
 
     private var mLastClickTime: Long = 0
     private var status: Int = 0
@@ -107,6 +63,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
     private val handler: Handler = Handler(Looper.getMainLooper())
     var playerService: PlayerService? = null
     private val RC_LOGIN: Int = 100
+    private lateinit var binding: ActivitySecondaryLibraryBinding
 
     override fun onNewIntent(intent: Intent) {
         try {
@@ -155,7 +112,8 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
             Constants.PRIMARY_COLOR.GLOSSY -> setTheme(R.style.AppThemeDark)
             Constants.PRIMARY_COLOR.LIGHT -> setTheme(R.style.AppThemeLight)
         }
-        setContentView(R.layout.activity_secondary_library)
+        binding = ActivitySecondaryLibraryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val toolbar: Toolbar = findViewById<Toolbar>(R.id.toolbar_)
         try {
@@ -180,9 +138,9 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
         }
         if (ApplicationClass.isLocked()) {
             //border.setVisibility(View.VISIBLE);
-            border!!.setBackgroundResource(R.drawable.border_2dp)
+            binding.borderView.setBackgroundResource(R.drawable.border_2dp)
         } else {
-            border!!.setBackgroundResource(0)
+            binding.borderView.setBackgroundResource(0)
         }
         Executors.newSingleThreadExecutor().execute(object : Runnable {
             override fun run() {
@@ -201,13 +159,13 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                         for (d: dataItem in MusicLibrary.instance.getDataItemsForAlbums()) {
                             if (d.artist_id == key) data.add(d)
                         }
-                        handler.post { mAlbumsRecyclerView!!.visibility = View.VISIBLE }
-                        mAlbumsRecyclerView!!.adapter = AlbumLibraryAdapter(this@ActivitySecondaryLibrary,
+                        handler.post { binding.albumsInArtistFrag.visibility = View.VISIBLE }
+                        binding.albumsInArtistFrag.adapter = AlbumLibraryAdapter(this@ActivitySecondaryLibrary,
                             data)
-                        mAlbumsRecyclerView!!.layoutManager = LinearLayoutManager(this@ActivitySecondaryLibrary,
+                        binding.albumsInArtistFrag.layoutManager = LinearLayoutManager(this@ActivitySecondaryLibrary,
                             LinearLayoutManager.HORIZONTAL,
                             false)
-                        mAlbumsRecyclerView!!.isNestedScrollingEnabled = false
+                        binding.albumsInArtistFrag.isNestedScrollingEnabled = false
                         val item = TrackItem()
                         item.artist_id = key
                         item.setArtist(title)
@@ -285,7 +243,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                         }
                         if (trackList.isEmpty()) {
                             handler.post {
-                                fab!!.setImageDrawable(ContextCompat.getDrawable(this@ActivitySecondaryLibrary,
+                                binding.fabRightSide.setImageDrawable(ContextCompat.getDrawable(this@ActivitySecondaryLibrary,
                                     R.drawable.ic_add_black_24dp))
                             }
                         }
@@ -293,17 +251,15 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                 }
                 handler.post {
                     if (adapter != null) {
-                        mRecyclerView!!.adapter = adapter
+                        binding.secondaryLibraryList.adapter = adapter
                     }
-                    mRecyclerView!!.layoutManager = WrapContentLinearLayoutManager(this@ActivitySecondaryLibrary)
-                    mRecyclerView!!.isNestedScrollingEnabled = false
-                    val offsetPx: Float =
-                        resources.getDimension(R.dimen.bottom_offset_secondary_lib)
-                    val bottomOffsetDecoration: BottomOffsetDecoration = BottomOffsetDecoration(
-                        offsetPx.toInt())
-                    mRecyclerView!!.addItemDecoration(bottomOffsetDecoration)
-                    border!!.visibility = View.VISIBLE
-                    progressBar!!.visibility = View.INVISIBLE
+                    binding.secondaryLibraryList.layoutManager = WrapContentLinearLayoutManager(this@ActivitySecondaryLibrary)
+                    binding.secondaryLibraryList.isNestedScrollingEnabled = false
+                    val offsetPx: Float = resources.getDimension(R.dimen.bottom_offset_secondary_lib)
+                    val bottomOffsetDecoration = BottomOffsetDecoration(offsetPx.toInt())
+                    binding.secondaryLibraryList.addItemDecoration(bottomOffsetDecoration)
+                    binding.borderView.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.INVISIBLE
                     var item: TrackItem? = null
                     if ((adapter != null) && (adapter!!.getList() != null) && (adapter!!.getList()!!.size > 0)) {
                         item = MusicLibrary.instance.getTrackItemFromId(adapter!!.getList()!![0].id)
@@ -325,7 +281,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                                     .centerCrop()
                                     .placeholder(R.drawable.music)
                                     .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(mainBackdrop!!)
+                                    .into(binding.mainBackdrop)
                                 1 -> Glide.with(this@ActivitySecondaryLibrary)
                                     .load(MusicLibrary.instance.getAlbumArtUri(item.albumId))
                                     .centerCrop()
@@ -333,7 +289,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                    .into(mainBackdrop!!)
+                                    .into(binding.mainBackdrop)
                             }
                         }
                     }
@@ -347,41 +303,42 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
         }
         mReceiverForDataReady = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                //updateMiniplayerUI();
-                border!!.visibility = View.VISIBLE
+                binding.borderView.visibility = View.VISIBLE
             }
         }
-        miniPlayer!!.setOnClickListener(this)
-        buttonPlay!!.setOnClickListener(this)
-        buttonNext!!.setOnClickListener(this)
+        binding.miniPlayer.setOnClickListener(this)
+        binding.playPauseMiniPlayer.setOnClickListener(this)
+        binding.nextMiniPlaayrer.setOnClickListener(this)
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        miniPlayer!!.setBackgroundColor(ColorHelper.getWidgetColor())
-        //collapsingToolbarLayout.setContentScrimColor(ColorHelper.Ge());
-        fab!!.setOnClickListener { view: View? ->
-            if (status == Constants.FRAGMENT_STATUS.PLAYLIST_FRAGMENT && adapter!!.itemCount <= 2) {
-                startActivity(Intent(this@ActivitySecondaryLibrary, ActivityMain::class.java)
-                    .putExtra("move_to_tab", Constants.TABS.TRACKS))
-            } else {
-                if (adapter!!.itemCount <= 0) {
-                    Toast.makeText(this@ActivitySecondaryLibrary,
-                        "Empty Track List",
-                        Toast.LENGTH_SHORT).show()
-                } else {
-                    adapter!!.shuffleAll()
+        binding.miniPlayer.setBackgroundColor(ColorHelper.getWidgetColor())
+        binding.fabRightSide.setOnClickListener {
+            when {
+                status == Constants.FRAGMENT_STATUS.PLAYLIST_FRAGMENT && adapter!!.itemCount <= 2 -> {
+                    startActivity(Intent(this@ActivitySecondaryLibrary, ActivityMain::class.java)
+                        .putExtra("move_to_tab", Constants.TABS.TRACKS))
+                }
+                else -> {
+                    if (adapter!!.itemCount <= 0) {
+                        Toast.makeText(this@ActivitySecondaryLibrary,
+                            "Empty Track List",
+                            Toast.LENGTH_SHORT).show()
+                    } else {
+                        adapter!!.shuffleAll()
+                    }
                 }
             }
         }
-        fab!!.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
-        collapsingToolbarLayout!!.statusBarScrim = ColorHelper.getGradientDrawable()
+        binding.fabRightSide.backgroundTintList = ColorStateList.valueOf(ColorHelper.getWidgetColor())
+        binding.mainCollapsing.statusBarScrim = ColorHelper.getGradientDrawable()
         setTextAndIconColor()
     }
 
     private fun setTextAndIconColor() {
-        songNameMiniPlayer!!.setTextColor(ColorHelper.getPrimaryTextColor())
-        artistNameMiniPlayer!!.setTextColor(ColorHelper.getSecondaryTextColor())
-        artistBio!!.setTextColor(ColorHelper.getPrimaryTextColor())
+        binding.songNameMiniPlayer.setTextColor(ColorHelper.getPrimaryTextColor())
+        binding.artistMiniPlayer.setTextColor(ColorHelper.getSecondaryTextColor())
+        binding.artistBio.setTextColor(ColorHelper.getPrimaryTextColor())
         /*buttonPlay.setColorFilter(ColorHelper.getPrimaryTextColor());
         buttonNext.setColorFilter(ColorHelper.getPrimaryTextColor());*/
     }
@@ -395,7 +352,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
             .centerCrop()
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .dontAnimate()
-            .into(mainBackdrop!!)
+            .into(binding.mainBackdrop)
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -429,18 +386,18 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                         }
                     }
                     request.error(builder)
-                    request.into(albumArtIv!!)
+                    request.into(binding.albumArtMiniPlayer)
 
                     //albumArtIv.setImageBitmap(playerService!!.getAlbumArt());
-                    if (playerService!!.getStatus() === playerService!!.PLAYING) {
-                        buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
+                    if (playerService!!.getStatus() == playerService!!.PLAYING) {
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
                             R.drawable.ic_pause_black_24dp))
                     } else {
-                        buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
                             R.drawable.ic_play_arrow_black_24dp))
                     }
-                    songNameMiniPlayer!!.text = playerService!!.getCurrentTrack()!!.title
-                    artistNameMiniPlayer!!.text = playerService!!.getCurrentTrack()!!.getArtist()
+                    binding.songNameMiniPlayer.text = playerService!!.getCurrentTrack()!!.title
+                    binding.artistMiniPlayer.text = playerService!!.getCurrentTrack()!!.getArtist()
                     (findViewById<View>(R.id.app_bar_layout) as AppBarLayout).setExpanded(true)
                     //mHandler.post(getDominantColorRunnable());
                 }
@@ -465,7 +422,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                 val intent = Intent(applicationContext, ActivityNowPlaying::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                 val options: ActivityOptions = ActivityOptions.makeSceneTransitionAnimation(this,
-                    albumArtIv,
+                    binding.albumArtMiniPlayer,
                     getString(R.string.transition))
                 ActivityCompat.startActivityForResult(this,
                     intent,
@@ -485,12 +442,15 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                 mLastClickTime = SystemClock.elapsedRealtime()
                 playerService!!.play()
                 playerService!!.PostNotification()
-                if (playerService!!.getStatus() === playerService!!.PLAYING) {
-                    buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
-                        R.drawable.ic_pause_black_24dp))
-                } else {
-                    buttonPlay!!.setImageDrawable(ContextCompat.getDrawable(this,
-                        R.drawable.ic_play_arrow_black_24dp))
+                when (playerService!!.PLAYING) {
+                    playerService!!.getStatus() -> {
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.ic_pause_black_24dp))
+                    }
+                    else -> {
+                        binding.playPauseMiniPlayer.setImageDrawable(ContextCompat.getDrawable(this,
+                            R.drawable.ic_play_arrow_black_24dp))
+                    }
                 }
             }
             R.id.next_mini_plaayrer -> {
@@ -545,7 +505,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                     if (playerService!!.getEqualizerHelper().isEqualizerSupported()) {
                         startActivity(Intent(this, ActivityEqualizer::class.java))
                     } else {
-                        Snackbar.make(rootView!!,
+                        Snackbar.make(binding.rootViewSecondaryLib,
                             R.string.error_equ_not_supported,
                             Snackbar.LENGTH_SHORT).show()
                     }
@@ -576,7 +536,7 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                 ApplicationClass.getPref().edit().putInt(context.getString(R.string.pref_sleep_timer), 0).apply()
                 playerService!!.setSleepTimer(0, false)
                 //Toast.makeText(context, "Sleep timer discarded", Toast.LENGTH_LONG).show();
-                Snackbar.make(rootView!!, context.getString(R.string.sleep_timer_discarded), Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.rootViewSecondaryLib, context.getString(R.string.sleep_timer_discarded), Snackbar.LENGTH_SHORT).show()
             }
         }
         text.setPadding(0, 10, 0, 0)
@@ -609,17 +569,12 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
                             + seek.progress
                             + context.getString(R.string.main_act_sleep_timer_status_minutes))
                     //Toast.makeText(context, temp, Toast.LENGTH_LONG).show();
-                    Snackbar.make(rootView!!, temp, Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.rootViewSecondaryLib, temp, Snackbar.LENGTH_SHORT).show()
                 }
             }
             .negativeButton(R.string.cancel)
             .customView(view = linear, scrollable = true)
             .show()
-    }
-
-    public override fun onDestroy() {
-        mRecyclerView = null
-        super.onDestroy() //get search icon back on action bar
     }
 
     public override fun onResume() {
@@ -671,15 +626,13 @@ class ActivitySecondaryLibrary : AppCompatActivity(), View.OnClickListener, Arti
 
     override fun onArtInfoDownloaded(artistInfo: ArtistInfo?) {
         if (artistInfo == null) return
-        artistBio!!.visibility = View.VISIBLE
-        artistBio!!.text = artistInfo.getArtistContent()
+        binding.artistBio.visibility = View.VISIBLE
+        binding.artistBio.text = artistInfo.getArtistContent()
         setArtistImage(artistInfo.getImageUrl()!!)
     }
 
     //for catching exception generated by recycler view which was causing abend, no other way to handle this
-    internal inner class WrapContentLinearLayoutManager constructor(context: Context?) :
-        LinearLayoutManager(context) {
-        //... constructor
+    internal inner class WrapContentLinearLayoutManager constructor(context: Context?) : LinearLayoutManager(context) {
         override fun onLayoutChildren(recycler: RecyclerView.Recycler, state: RecyclerView.State) {
             try {
                 super.onLayoutChildren(recycler, state)

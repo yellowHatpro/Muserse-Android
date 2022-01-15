@@ -531,7 +531,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     }
 
     private fun setMainImage(url: String) {
-        progressBar!!.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
         Glide.with(applicationContext)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -542,7 +542,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     target: Target<Drawable?>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    progressBar!!.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(this@ActivityLyricCard,
                         R.string.error_loading_image_lyric_card,
                         Toast.LENGTH_SHORT).show()
@@ -556,7 +556,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    progressBar!!.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     return false
                 }
             })
@@ -564,7 +564,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
     }
 
     private fun setMainImage(uri: Uri) {
-        progressBar!!.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
         Glide.with(this@ActivityLyricCard)
             .load(uri)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -575,7 +575,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     target: Target<Drawable?>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    progressBar!!.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(this@ActivityLyricCard,
                         R.string.error_loading_image_lyric_card,
                         Toast.LENGTH_SHORT).show()
@@ -589,7 +589,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    progressBar!!.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     return false
                 }
             }).into(mainImage!!)
@@ -604,7 +604,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
 
     fun addArtistImage() {
         mainImage!!.setImageBitmap(null)
-        progressBar!!.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
         val info = OfflineStorageArtistBio.getArtistInfoFromCache(artistText!!.text.toString())
         Log.d("ActivityLyricCard", "addArtistImage: $info")
         when {
@@ -632,7 +632,7 @@ class ActivityLyricCard : AppCompatActivity(), View.OnTouchListener {
                 }, artist, null).start()
             }
             else -> {
-                progressBar!!.visibility = View.INVISIBLE
+                binding.progressBar.visibility = View.INVISIBLE
                 Toast.makeText(this, "Not connected to internet", Toast.LENGTH_SHORT).show()
             }
         }
